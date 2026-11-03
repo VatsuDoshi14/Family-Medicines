@@ -1,0 +1,1833 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#162029" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Track your family’s medicines, stock and refills.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Medicines">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Family Medicine Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{
+  --bg:#F4F6F8;--surface:#FFFFFF;--surface-2:#F8FAFB;--ink:#14212B;--muted:#55636F;--faint:#8996A2;--line:#DFE5EA;
+  --accent:#2450B8;--accent-ink:#FFFFFF;--accent-soft:#E7EDFA;
+  --ok:#1D7A52;--ok-soft:#E2F2EA;--warn:#9C6410;--warn-soft:#FAEFD9;--bad:#B8322A;--bad-soft:#FBE4E1;--idle:#7D8A96;--idle-soft:#ECEFF2;
+  --r-l:18px;--r-m:12px;--r-s:9px;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#0E151B;--surface:#162029;--surface-2:#1B2631;--ink:#E6EDF2;--muted:#A2B0BB;--faint:#7A8894;--line:#283541;
+  --accent:#86A8FF;--accent-ink:#0E151B;--accent-soft:#1E2B48;
+  --ok:#62C997;--ok-soft:#163126;--warn:#E5B25C;--warn-soft:#372B15;--bad:#FF8C80;--bad-soft:#3C1F1C;--idle:#93A0AB;--idle-soft:#222D37;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){
+    --bg:#0E151B;--surface:#162029;--surface-2:#1B2631;--ink:#E6EDF2;--muted:#A2B0BB;--faint:#7A8894;--line:#283541;
+    --accent:#86A8FF;--accent-ink:#0E151B;--accent-soft:#1E2B48;
+    --ok:#62C997;--ok-soft:#163126;--warn:#E5B25C;--warn-soft:#372B15;--bad:#FF8C80;--bad-soft:#3C1F1C;--idle:#93A0AB;--idle-soft:#222D37;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;line-height:1.2;font-weight:700}
+h1{font-size:clamp(28px,4.2vw,40px);letter-spacing:-.01em}
+h2{font-size:21px}
+h3{font-size:17.5px}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg{width:20px;height:20px;flex:none}
+
+/* Shell */
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.app>div{min-width:0}
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:22px;padding:24px 14px;background:var(--surface);border-right:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:18px;padding:0 8px;color:var(--ink);text-decoration:none}
+.logo{width:30px;height:30px;border-radius:10px;background:var(--accent);position:relative;flex:none;display:inline-block}
+.logo::after{content:"";position:absolute;left:5px;right:5px;top:11px;height:8px;border-radius:99px;background:var(--surface);transform:rotate(-38deg)}
+.logo.lg{width:48px;height:48px;border-radius:15px}
+.logo.lg::after{left:9px;right:9px;top:18px;height:12px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:11px;color:var(--ink);text-decoration:none}
+.nav a:hover{background:var(--surface-2)}
+.nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.badge{margin-left:auto;min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:var(--bad);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.side .grow{flex:1}
+.side-note{font-size:13.5px;color:var(--muted);padding:0 8px}
+main{padding:34px clamp(16px,4vw,52px) 110px;min-width:0;max-width:1220px;width:100%}
+.topbar,.tabbar{display:none}
+@media (max-width:880px){
+  .app{grid-template-columns:1fr}
+  .side{display:none}
+  .topbar{display:flex;position:sticky;top:0;z-index:20;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
+  .topbar .btn-row{flex-wrap:nowrap}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12.5px;color:var(--muted);text-decoration:none;padding:4px 0;position:relative}
+  .tabbar a[aria-current="page"]{color:var(--accent);font-weight:700}
+  .tabbar svg{width:23px;height:23px}
+  .tabbar .badge{position:absolute;top:-2px;left:calc(50% + 5px);min-width:18px;height:18px;font-size:11px;padding:0 5px;margin:0}
+  main{padding:22px 16px calc(110px + env(safe-area-inset-bottom,0px))}
+}
+
+/* Page structure */
+.page-head{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:26px}
+.page-head .sub{margin-top:6px;color:var(--muted)}
+.back{display:inline-block;margin-bottom:10px;font-weight:700;text-decoration:none}
+.stack>*+*{margin-top:24px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:24px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px 22px}
+.panel-head,.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.section-head{margin-bottom:14px}
+.link{font-weight:700;text-decoration:none;font-size:15.5px}
+.filters{display:flex;flex-wrap:wrap;gap:10px}
+.filters select,.filters input{width:auto;min-width:150px;flex:1 1 150px}
+@media (max-width:600px){.filters{width:100%}}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.toolbar input[type=search]{flex:1 1 240px;width:auto}
+.toolbar select,.toolbar input[type=date]{flex:1 1 170px;width:auto;min-width:0}
+.toolbar>*{min-width:0}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;padding:0}
+.kpi{background:var(--surface);border:0;padding:18px 20px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.kpi:hover{background:var(--surface-2)}
+.kpi b{font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:14.5px}
+.kpi.is-bad b{color:var(--bad)}
+.kpi.is-warn b{color:var(--warn)}
+
+/* Banner */
+.banner{display:flex;gap:14px;align-items:flex-start;padding:16px 20px;border-radius:var(--r-l);background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 28%,transparent)}
+.banner .b-icon{color:var(--bad);padding-top:2px}
+.banner h2{font-size:18px;margin-bottom:6px}
+.banner ul{list-style:none;margin:0;padding:0}
+.banner li{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--bad) 18%,transparent)}
+.banner li:first-child{border-top:0}
+.banner .b-body{flex:1;min-width:0}
+
+/* Rows */
+.rows{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(130px,1fr) minmax(120px,.8fr) auto;gap:14px;align-items:center;padding:14px 8px;border-top:1px solid var(--line);color:inherit;text-decoration:none;border-radius:10px}
+.row:first-child{border-top:0}
+a.row:hover{background:var(--surface-2)}
+.r-main{display:flex;align-items:center;gap:12px;min-width:0}
+.name{font-weight:700;color:var(--ink);text-decoration:none}
+.sub{color:var(--muted);font-size:14.5px}
+.r-stock{display:flex;flex-direction:column;gap:5px}
+.r-end{justify-self:end}
+.compact .row{grid-template-columns:minmax(0,1.4fr) minmax(110px,1fr) auto}
+@media (max-width:700px){
+  .row,.compact .row{grid-template-columns:1fr auto;row-gap:8px}
+  .row .r-stock{grid-column:1}
+  .row .r-cover{grid-column:2;text-align:right}
+  .row .r-end{grid-column:2;grid-row:1}
+}
+
+/* Status */
+.chip{display:inline-flex;align-items:center;gap:7px;padding:3px 11px;border-radius:99px;font-size:14px;font-weight:700;white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.chip.s-ok{background:var(--ok-soft);color:var(--ok)}
+.chip.s-warn{background:var(--warn-soft);color:var(--warn)}
+.chip.s-bad{background:var(--bad-soft);color:var(--bad)}
+.chip.s-idle{background:var(--idle-soft);color:var(--idle)}
+.s-ok{--c:var(--ok)}.s-warn{--c:var(--warn)}.s-bad{--c:var(--bad)}.s-idle{--c:var(--idle)}
+.tag{font-size:14.5px;font-weight:700}
+.tag.ok{color:var(--ok)}.tag.warn{color:var(--warn)}.tag.bad{color:var(--bad)}.tag.idle{color:var(--idle)}
+
+/* Stock meter: a blister strip of pips */
+.pips{display:inline-grid;grid-template-columns:repeat(var(--cols,15),10px);gap:3px}
+.pips i{width:10px;height:15px;border-radius:5px;border:1.5px solid var(--line);background:transparent}
+.pips i.on{background:var(--c);border-color:var(--c)}
+.pips i.half{background:linear-gradient(to top,var(--c) 50%,transparent 50%);border-color:var(--c)}
+.pips.lg{grid-template-columns:repeat(var(--cols,15),16px);gap:5px}
+.pips.lg i{width:16px;height:24px;border-radius:8px;border-width:2px}
+.bar{display:block;height:10px;border-radius:99px;background:var(--idle-soft);overflow:hidden;width:100%;max-width:200px}
+.bar i{display:block;height:100%;background:var(--c);border-radius:99px}
+.bar.lg{height:14px;max-width:320px}
+
+/* Avatars */
+.av{--c:#2450B8;width:38px;height:38px;border-radius:50%;background:color-mix(in srgb,var(--c) 15%,var(--surface));color:var(--c);display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none;font-size:16px}
+.av.lg{width:58px;height:58px;font-size:23px}
+.av.sm{width:30px;height:30px;font-size:13px}
+
+/* Member cards */
+.members{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:16px}
+.mcard{display:flex;flex-direction:column;gap:12px;padding:18px 20px;border-radius:var(--r-l);background:var(--surface);border:1px solid var(--line);text-decoration:none;color:inherit}
+.mcard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.mc-top{display:flex;align-items:center;gap:14px}
+.mcard .counts{display:flex;flex-wrap:wrap;gap:6px}
+
+/* Today schedule */
+.sched{list-style:none;margin:0;padding:0}
+.sched-item{display:grid;grid-template-columns:82px 38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.sched-item:first-child{border-top:0}
+.s-time{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.s-what{display:flex;flex-direction:column;min-width:0}
+.s-status{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right}
+.sched-item.past .s-time{color:var(--muted)}
+@media (max-width:560px){.sched-item{grid-template-columns:72px minmax(0,1fr);row-gap:8px}.sched-item .av{display:none}.sched-item .s-status{grid-column:2;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;text-align:left}}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;cursor:pointer;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:color-mix(in srgb,var(--accent) 86%,#000)}
+.btn-danger{color:var(--bad)}
+.btn-danger-solid{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{min-height:36px;padding:0 12px;font-size:14.5px;border-radius:10px}
+.btn.block{width:100%}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px}
+.btn-row.center{justify-content:center}
+.btn-col{display:flex;flex-direction:column;gap:10px}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:11px;border:0;background:transparent;cursor:pointer;color:var(--ink)}
+.icon-btn:hover{background:var(--surface-2)}
+
+/* Forms */
+.field{display:flex;flex-direction:column;gap:6px;min-width:0;border:0;padding:0;margin:0}
+.field>label,.lbl{font-weight:700;font-size:15.5px}
+legend.lbl{padding:0;margin-bottom:6px}
+.hint{font-size:14px;color:var(--muted);font-weight:400}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=password],input[type=search],select,textarea{min-height:46px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);width:100%;color:var(--ink)}
+input:hover,select:hover,textarea:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
+textarea{min-height:84px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.form-grid .full{grid-column:1/-1}
+@media (max-width:600px){.form-grid{grid-template-columns:1fr}}
+.check{display:flex;gap:12px;align-items:flex-start;cursor:pointer;padding:6px 0}
+.check input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+.inline{display:flex;align-items:center;gap:10px}
+.inline input{max-width:110px}
+.err{color:var(--bad);font-weight:700;font-size:15px;margin-top:12px}
+.slot-grid{display:grid;grid-template-columns:110px minmax(0,1fr) minmax(0,1fr);gap:8px 10px;align-items:center}
+.slot-grid .hint{font-weight:700}
+@media (max-width:600px){.slot-grid{grid-template-columns:86px minmax(0,1fr) minmax(0,1.2fr)}.slot-grid input[type=time]{padding:9px 6px}}
+.days{display:flex;flex-wrap:wrap;gap:6px}
+.day input{position:absolute;opacity:0;pointer-events:none}
+.day span{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:40px;border-radius:10px;border:1px solid var(--line);font-weight:700;cursor:pointer}
+.day input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.day input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches legend{width:100%}
+.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw span{display:block;width:34px;height:34px;border-radius:50%;background:var(--c);cursor:pointer;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.sw input:checked+span{box-shadow:0 0 0 3px var(--ink)}
+.sw input:focus-visible+span{outline:3px solid var(--accent);outline-offset:3px}
+.preview,.total{padding:14px 16px;border-radius:var(--r-m);background:var(--accent-soft);font-size:15.5px}
+.total:empty,.preview:empty{display:none}
+.variance{padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2);border:1px solid var(--line);font-weight:700}
+.variance.pos{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.variance.neg{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.variance.zero{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.big-num{font-size:34px;font-weight:700;line-height:1.1}
+
+/* Dialog */
+dialog{border:0;padding:0;border-radius:20px;background:var(--surface);color:var(--ink);width:min(580px,calc(100vw - 24px));max-height:calc(100vh - 32px);box-shadow:0 24px 70px rgba(8,18,28,.28)}
+dialog.wide{width:min(760px,calc(100vw - 24px))}
+dialog::backdrop{background:rgba(12,22,32,.45)}
+dialog form{display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 18px 0 22px}
+.dlg-body{padding:16px 22px 20px;overflow:auto}
+.dlg-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px 18px;border-top:1px solid var(--line)}
+.dlg-foot .spacer{flex:1}
+@media (max-width:600px){
+  dialog,dialog.wide{width:100vw;max-width:100vw;margin:auto 0 0;border-radius:20px 20px 0 0;max-height:94vh}
+  dialog form{max-height:94vh}
+  .dlg-foot{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+}
+.steps{display:flex;gap:6px;margin-bottom:8px}
+.steps span{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.steps span.on{background:var(--accent)}
+.step-label{margin-bottom:16px}
+
+/* Tables and stats */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:15.5px}
+th{text-align:left;font-weight:700;color:var(--muted);font-size:14px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.nowrap{white-space:nowrap}
+.pos-q{color:var(--ok)}.neg-q{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border-radius:var(--r-l);overflow:hidden;border:1px solid var(--line);margin:0}
+.stats>div{background:var(--surface);padding:16px 18px}
+.stats dt{color:var(--muted);font-size:14.5px}
+.stats dd{margin:4px 0 0;font-size:23px;font-weight:700;line-height:1.25}
+.stats dd small{display:block;font-size:14px;font-weight:400;color:var(--muted);margin-top:4px;line-height:1.4}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stock-hero{display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px}
+.note{font-size:15px;color:var(--muted)}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:9px;font-weight:700;cursor:pointer;color:var(--muted);min-height:38px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+
+/* Alerts list */
+.alert-item{display:grid;grid-template-columns:12px minmax(0,1fr);gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+.alert-item:first-of-type{border-top:0}
+.alert-item .dot{width:12px;height:12px;border-radius:50%;background:var(--c);margin-top:6px}
+.alert-item.unread h3::after{content:"New";margin-left:10px;font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:99px;vertical-align:2px}
+.alert-item .btn-row{margin-top:10px}
+
+/* Empty, gate, toast */
+.empty{padding:40px 20px;text-align:center}
+.empty h3{margin-bottom:6px;font-size:20px}
+.empty p{color:var(--muted);margin-bottom:18px;max-width:46ch;margin-left:auto;margin-right:auto}
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gate .panel{width:min(460px,100%);padding:32px 30px;display:flex;flex-direction:column;gap:16px}
+.gate h1{font-size:30px}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:700;z-index:1000;max-width:calc(100vw - 32px)}
+@media (min-width:881px){.toast{bottom:28px}}
+.warnbar{background:var(--warn-soft);color:var(--warn);padding:10px 16px;border-radius:var(--r-m);font-weight:700;margin-bottom:18px}
+/* Touch and app feel */
+html{-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior-y:none}
+.btn,.kpi,.nav a,.tabbar a,.icon-btn,.row,.mcard,.seg button,.day span,.check{-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.btn,.icon-btn,.kpi,a.row,.mcard{transition:transform .08s ease,background-color .12s ease}
+.btn:active,.icon-btn:active,.kpi:active,a.row:active,.mcard:active{transform:scale(.97)}
+dialog[open]{animation:sheet-in .2s ease-out}
+@keyframes sheet-in{from{transform:translateY(18px);opacity:.4}to{transform:none;opacity:1}}
+.install{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;padding:16px 18px;border-radius:var(--r-l);background:var(--accent-soft)}
+.install p{flex:1 1 240px}
+@media (max-width:880px){
+  .tabbar{padding-top:8px}
+  .tabbar a{font-size:12px;gap:3px}
+  .tabbar a svg{width:22px;height:22px;padding:4px 16px;box-sizing:content-box;border-radius:99px}
+  .tabbar a[aria-current="page"] svg{background:var(--accent-soft)}
+  .tabbar .badge{top:0;left:calc(50% + 9px)}
+  .topbar .brand{font-size:17px}
+  .page-head{margin-bottom:18px}
+  .panel{padding:16px}
+  .banner{padding:14px 16px}
+  .banner .btn-row{width:100%}
+  .banner .btn-row .btn{flex:1}
+}
+@media (max-width:600px){
+  h1{font-size:28px}
+  .page-head>.btn,.page-head>div>.btn-row{width:100%}
+  .page-head>.btn{flex:1}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .actions .btn{width:100%;white-space:normal;text-align:center;padding:6px 10px;line-height:1.25}
+  .actions .btn-primary{grid-column:1/-1}
+  .kpi{padding:14px 16px}
+  .kpi b{font-size:30px}
+  dialog form::before{content:"";display:block;width:42px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 0;flex:none}
+  .dlg-head{padding-top:8px}
+  .dlg-foot .btn{flex:1}
+  .gate{align-items:start;padding-top:calc(24px + env(safe-area-inset-top,0px))}
+  .gate .panel{padding:26px 20px}
+  /* Tables become stacked cards */
+  table.rt,table.rt tbody,table.rt tr,table.rt td{display:block;width:100%}
+  table.rt thead{display:none}
+  table.rt tr{padding:12px 0;border-bottom:1px solid var(--line)}
+  table.rt tr:last-child{border-bottom:0}
+  table.rt td{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:3px 0;border:0;text-align:right;white-space:normal}
+  table.rt td::before{content:attr(data-label);color:var(--muted);font-size:14px;font-weight:400;text-align:left;flex:none}
+  table.rt td:first-child{font-weight:700;text-align:left;padding-bottom:4px}
+  table.rt td:first-child::before,table.rt td[data-label=""]::before{display:none}
+  table.rt td[data-label=""]{justify-content:flex-end}
+  table.rt td:empty{display:none}
+  .tbl-wrap{overflow:visible}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<dialog id="modal"></dialog>
+<input type="file" id="restore-file" accept="application/json,.json" hidden>
+<script>
+(() => {
+'use strict';
+
+/* ---------- Constants ---------- */
+const KEY = 'family-med-tracker-v1';
+const DAY = 864e5;
+const SLOT_ORDER = ['morning','afternoon','evening','night','c1'];
+const SLOT_LABEL = {morning:'Morning',afternoon:'Afternoon',evening:'Evening',night:'Night',c1:'Other time'};
+const TYPES = ['Tablet','Capsule','Syrup','Injection','Other'];
+const UNIT_BY_TYPE = {Tablet:'tablet',Capsule:'capsule',Syrup:'ml',Injection:'unit',Other:'unit'};
+const PACK_LABEL = {Tablet:'Tablets per strip',Capsule:'Capsules per strip',Syrup:'ml per bottle',Injection:'Units per pen or vial',Other:'Units per pack'};
+const PACK_WORD = {Tablet:'Strips',Capsule:'Strips',Syrup:'Bottles',Injection:'Pens or vials',Other:'Packs'};
+const COLORS = ['#2450B8','#1D7A52','#9B3F92','#B85A16','#1F7F8E','#6650C8','#8C6A0E','#B8324F'];
+const RELATIONS = ['Self','Mom','Dad','Brother','Sister','Spouse','Son','Daughter','Grandparent','Other'];
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TXN_LABEL = {opening:'Opening stock',purchase:'Purchase',taken:'Dose recorded',skip:'Dose skipped, stock restored',unskip:'Skip undone',count:'Count adjustment',adjust:'Stock adjustment',writeoff:'Written off'};
+const DOSE_LABEL = {auto:'Dose deducted',short:'Dose due, not enough stock',taken:'Dose taken',skipped:'Dose skipped',pending:'Dose not confirmed'};
+const CAT_LABEL = {member:'Family',medicine:'Medicine',stock:'Stock',dose:'Dose',alert:'Alert'};
+const PLURAL = new Set(['tablet','capsule','unit','puff','drop','sachet','pen','vial','strip','dose','application']);
+
+/* ---------- Utilities ---------- */
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-5);
+const pad = n => String(n).padStart(2,'0');
+const dstr = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseD = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (s,n) => { const d = parseD(s); d.setDate(d.getDate()+n); return dstr(d); };
+const diffDays = (a,b) => Math.round((parseD(b) - parseD(a)) / DAY);
+const atTs = (date,time) => { const d = parseD(date); const [h,m] = (time||'00:00').split(':').map(Number); d.setHours(h,m,0,0); return d.getTime(); };
+const round = x => Math.round(x*1000)/1000;
+const today = () => dstr(new Date());
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = s => s ? parseD(s).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+const fmtShort = s => s ? parseD(s).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+const fmtDay = s => parseD(s).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+const fmtLong = s => parseD(s).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+const fmtTs = t => new Date(t).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
+const fmtTime = hm => { const [h,m] = hm.split(':').map(Number); const d = new Date(); d.setHours(h,m,0,0); return d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}); };
+const num = q => { const r = Math.round(q*100)/100; return String(r); };
+function fmtQty(q, unit){ unit = unit || 'unit'; const n = num(q); return n + ' ' + (PLURAL.has(unit) && Math.abs(q) !== 1 ? unit + 's' : unit); }
+const plural = (n,w) => `${n} ${w}${n===1?'':'s'}`;
+const initial = name => (name||'?').trim().charAt(0).toUpperCase();
+const val = (f,n) => (f.elements[n] && f.elements[n].value != null ? String(f.elements[n].value).trim() : '');
+const numVal = (f,n) => { const v = parseFloat(val(f,n)); return isNaN(v) ? null : v; };
+
+/* ---------- State ---------- */
+function freshState(){
+  return {version:1, profile:null,
+    settings:{slotTimes:{morning:'08:00',afternoon:'14:00',evening:'18:00',night:'21:00',c1:'11:00'},lowDays:2,amberDays:7,expiryDays:30,theme:'light',browserNotify:false,skipCountsMissed:true},
+    members:[], medicines:[], schedules:[], doses:{}, txns:[], counts:[], alerts:[], cycles:{}, log:[]};
+}
+let S = freshState();
+let storageOk = true;
+function load(){
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch(e){ storageOk = false; }
+  let obj = null;
+  if (raw) { try { obj = JSON.parse(raw); } catch(e){ obj = null; } }
+  S = normalise(obj);
+}
+function normalise(obj){
+  const f = freshState();
+  const s = Object.assign(f, obj || {});
+  s.settings = Object.assign(freshState().settings, s.settings || {});
+  s.settings.slotTimes = Object.assign(freshState().settings.slotTimes, s.settings.slotTimes || {});
+  ['members','medicines','schedules','txns','counts','alerts','log'].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  if (!s.doses || typeof s.doses !== 'object') s.doses = {};
+  if (!s.cycles || typeof s.cycles !== 'object') s.cycles = {};
+  return s;
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(S)); storageOk = true; }
+  catch(e){ storageOk = false; }
+}
+
+/* ---------- Lookups ---------- */
+const memberById = id => S.members.find(m => m.id === id);
+const medById = id => S.medicines.find(m => m.id === id);
+const versionsOf = id => S.schedules.filter(v => v.m === id).sort((a,b) => a.from < b.from ? -1 : a.from > b.from ? 1 : a.n - b.n);
+const lowDaysOf = med => (med.lowDays ?? S.settings.lowDays);
+function categories(){ return [...new Set(S.medicines.map(m => m.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)); }
+function isArchivedMed(m){ const mem = memberById(m.memberId); return !mem || mem.archived; }
+
+/* ---------- Schedule engine ---------- */
+function versionOn(vers, date){
+  for (let i = vers.length-1; i >= 0; i--){
+    const v = vers[i];
+    if (v.from <= date && (!v.to || date <= v.to)) return v;
+  }
+  return null;
+}
+function currentVersion(med, vers){
+  vers = vers || versionsOf(med.id);
+  const t = today();
+  return versionOn(vers, t) || vers.filter(v => !v.to || v.to >= v.from).find(v => v.from > t) || vers[vers.length-1] || null;
+}
+function occursOn(rec, date, anchor){
+  if (!rec || rec.type === 'daily') return true;
+  if (rec.type === 'weekdays') return (rec.days||[]).includes(parseD(date).getDay());
+  if (rec.type === 'everyN'){ const k = diffDays(rec.anchor || anchor, date); return k >= 0 && k % (rec.n||1) === 0; }
+  return true;
+}
+function activeOn(med, date){
+  if (date < med.startDate) return false;
+  if (med.endDate && date > med.endDate) return false;
+  if (med.status === 'discontinued' && med.discontinuedOn && date >= med.discontinuedOn) return false;
+  for (const p of (med.pauses||[])){ if (date >= p.from && (!p.to || date <= p.to)) return false; }
+  return true;
+}
+function occsOnDate(med, vers, date){
+  if (med.prn || !activeOn(med, date)) return [];
+  const v = versionOn(vers, date);
+  if (!v || !occursOn(v.rec, date, v.from)) return [];
+  return v.slots.filter(s => s.qty > 0)
+    .map(s => ({date, slot:s.slot, time:s.time, qty:s.qty, v:v.id, ts:atTs(date, s.time)}))
+    .sort((a,b) => a.ts - b.ts);
+}
+const slotName = s => { const k = s.slot || s.s; if (k && k !== 'c1' && SLOT_LABEL[k]) return SLOT_LABEL[k]; const tm = s.time || s.tm; return tm ? fmtTime(tm) : 'Other time'; };
+
+/* ---------- Ledger ---------- */
+function stockMap(){
+  const m = {};
+  for (const t of S.txns) m[t.m] = (m[t.m]||0) + t.q;
+  for (const k in S.doses){ const d = S.doses[k]; if (d.ded) m[d.m] = (m[d.m]||0) - d.ded; }
+  for (const k in m) m[k] = round(m[k]);
+  return m;
+}
+function stockOf(id){ return stockMap()[id] || 0; }
+function addTxn(med, type, q, note, extra){
+  const t = Object.assign({id:uid(), m:med.id, type, q:round(q), at:Date.now(), note:note||''}, extra||{});
+  S.txns.push(t); return t;
+}
+function logE(cat, med, text, extra){
+  S.log.push(Object.assign({id:uid(), at:Date.now(), cat, m:med ? med.id : null, mem:med ? med.memberId : null, text}, extra||{}));
+}
+
+/* Process doses that have fallen due. Each medicine + date + slot gets exactly one dose record. */
+function processDue(now){
+  now = now || Date.now();
+  const stock = stockMap();
+  let changed = false;
+  for (const med of S.medicines){
+    if (med.prn){ med.doneUntil = now; continue; }
+    const vers = versionsOf(med.id);
+    const from = med.doneUntil || med.trackFrom;
+    if (from >= now) continue;
+    let d = dstr(new Date(from));
+    const end = dstr(new Date(now));
+    let guard = 0;
+    while (d <= end && guard++ < 1200){
+      for (const o of occsOnDate(med, vers, d)){
+        if (o.ts < med.trackFrom || o.ts > now) continue;
+        if (med.doneUntil && o.ts <= med.doneUntil) continue;
+        const key = med.id + '|' + o.date + '|' + o.slot;
+        if (S.doses[key]) continue;
+        let ded = 0, st;
+        if (med.autoDeduct){
+          const have = Math.max(0, stock[med.id]||0);
+          ded = round(Math.min(o.qty, have));
+          st = ded + 1e-9 < o.qty ? 'short' : 'auto';
+          stock[med.id] = round((stock[med.id]||0) - ded);
+        } else st = 'pending';
+        S.doses[key] = {m:med.id, d:o.date, s:o.slot, tm:o.time, t:o.ts, q:o.qty, ded, st, v:o.v};
+        changed = true;
+      }
+      d = addDays(d, 1);
+    }
+    med.doneUntil = now;
+  }
+  return changed;
+}
+
+/* Forecast by stepping through the real future schedule. */
+function forecast(med, vers, stockQty, pendingQty, now){
+  now = now || Date.now();
+  const res = {stock:stockQty, projected:round(stockQty - (pendingQty||0)), pending:pendingQty||0, runout:null, last:null, cover:Infinity, avgDaily:0, hasFuture:false};
+  if (med.prn || med.status === 'discontinued') return res;
+  let s = res.projected;
+  const t0 = dstr(new Date(now));
+  const d28 = addDays(t0, 28);
+  let total28 = 0, d = t0;
+  for (let i = 0; i <= 400; i++){
+    if (med.endDate && d > med.endDate) break;
+    for (const o of occsOnDate(med, vers, d)){
+      if (d < d28) total28 += o.qty;
+      if (o.ts <= now) continue;
+      res.hasFuture = true;
+      if (!res.runout){
+        if (s + 1e-9 >= o.qty){ s = round(s - o.qty); res.last = o; }
+        else res.runout = o;
+      }
+    }
+    if (res.runout && d >= d28) break;
+    d = addDays(d, 1);
+  }
+  res.avgDaily = round(total28 / 28);
+  if (res.runout) res.cover = Math.max(0, diffDays(t0, res.runout.date) - 1);
+  return res;
+}
+function statusOf(med, f){
+  if (med.status === 'discontinued') return {key:'idle', label:'Discontinued', rank:5};
+  if (med.status === 'paused') return {key:'idle', label:'Paused', rank:4};
+  if (med.prn) return f.stock > 0 ? {key:'ok', label:'When needed', rank:3} : {key:'bad', label:'Out of stock', rank:0};
+  if (!f.hasFuture) return {key:'idle', label:'No upcoming doses', rank:4};
+  if (f.stock <= 0) return {key:'bad', label:'Out of stock', rank:0};
+  if (f.cover <= lowDaysOf(med)) return {key:'bad', label:'Refill now', rank:1};
+  if (f.cover <= S.settings.amberDays) return {key:'warn', label:'Running low', rank:2};
+  return {key:'ok', label:'In stock', rank:3};
+}
+/* Remaining stock sits in the latest-expiring batches (earliest used first). */
+function nearestExpiry(medId, stockQty){
+  const b = S.txns.filter(t => t.m === medId && (t.type === 'purchase' || t.type === 'opening') && t.exp && t.q > 0)
+    .sort((a,b) => b.exp.localeCompare(a.exp));
+  let left = stockQty, nearest = null;
+  for (const x of b){ if (left <= 1e-9) break; left -= x.q; nearest = x.exp; }
+  return nearest;
+}
+function pendingMap(){
+  const p = {};
+  for (const k in S.doses){ const d = S.doses[k]; if (d.st === 'pending') p[d.m] = (p[d.m]||0) + d.q; }
+  return p;
+}
+let C = null;
+function snap(now){
+  const stock = stockMap(), pend = pendingMap();
+  const fc = {}, st = {}, exp = {};
+  for (const m of S.medicines){
+    const f = forecast(m, versionsOf(m.id), stock[m.id]||0, pend[m.id]||0, now);
+    fc[m.id] = f; st[m.id] = statusOf(m, f); exp[m.id] = nearestExpiry(m.id, f.stock);
+  }
+  return {stock, pend, fc, st, exp};
+}
+function adherence(med, days){
+  days = days || 30;
+  const now = Date.now(), from = now - days*DAY;
+  let expd = 0, miss = 0;
+  for (const k in S.doses){
+    const d = S.doses[k];
+    if (d.m !== med.id || d.t < from || d.t > now) continue;
+    expd += d.q;
+    if (d.st === 'skipped' && S.settings.skipCountsMissed) miss += d.q;
+  }
+  for (const c of S.counts){ if (c.m === med.id && c.at >= from && c.variance > 0) miss += c.variance; }
+  if (expd <= 0) return null;
+  return Math.max(0, Math.min(1, 1 - miss/expd));
+}
+function avgDoseQty(med){
+  const v = currentVersion(med);
+  if (!v || !v.slots.length) return 1;
+  const qs = v.slots.filter(s => s.qty > 0).map(s => s.qty);
+  return qs.length ? qs.reduce((a,b)=>a+b,0)/qs.length : 1;
+}
+
+/* ---------- Alerts ---------- */
+function housekeeping(){
+  const t = today();
+  for (const m of S.medicines){
+    if (m.status === 'paused'){
+      const p = (m.pauses||[])[m.pauses.length-1];
+      if (p && p.to && t > p.to){ m.status = 'active'; logE('medicine', m, `Resumed ${m.name} automatically`); }
+    }
+  }
+}
+function coverText(f){
+  if (f.cover === Infinity) return f.hasFuture ? 'Over a year' : '—';
+  return plural(f.cover, 'day');
+}
+function addAlert(med, type, cyc, f, now, extra){
+  const mem = memberById(med.memberId) || {name:'Someone'};
+  let title = '', body = '';
+  if (type === 'low'){
+    title = `${med.name} for ${mem.name} needs a refill`;
+    body = `${fmtQty(f.stock, med.unit)} left, ${coverText(f)} of cover. ` +
+      (f.last ? `Last covered dose is ${fmtDay(f.last.date)}, ${slotName(f.last).toLowerCase()}. ` : '') +
+      `Runs out ${fmtDate(f.runout.date)}. Count what’s left to check doses were taken.`;
+  } else if (type === 'zero'){
+    title = `${med.name} for ${mem.name} is out of stock`;
+    body = `Expected stock has reached zero, based on the schedule. ` + (f.runout ? `Next dose is due ${fmtDay(f.runout.date)}. ` : '') + `Count to confirm, then record a purchase.`;
+  } else if (type === 'expiry'){
+    const dd = diffDays(today(), extra.exp);
+    title = dd < 0 ? `${med.name} for ${mem.name} has expired` : `${med.name} for ${mem.name} expires soon`;
+    body = dd < 0 ? `Stock expired on ${fmtDate(extra.exp)}. Remove it with Adjust stock and buy fresh.` : `The oldest stock expires on ${fmtDate(extra.exp)}, in ${plural(dd,'day')}.`;
+  }
+  const a = Object.assign({id:uid(), m:med.id, mem:med.memberId, type, cyc, at:now, read:false, res:null, title, body}, extra||{});
+  S.alerts.push(a);
+  logE('alert', med, title);
+  return a;
+}
+function resolveAlerts(pred, now){ for (const a of S.alerts){ if (!a.res && pred(a)) a.res = now; } }
+function evaluateAlerts(now){
+  now = now || Date.now();
+  const sn = snap(now);
+  const created = [];
+  const t = dstr(new Date(now));
+  for (const med of S.medicines){
+    const f = sn.fc[med.id];
+    const watching = med.status === 'active' && !med.prn;
+    let cyc = S.cycles[med.id];
+    const zero = watching && f.hasFuture && f.stock <= 0;
+    const low = watching && f.hasFuture && f.cover <= lowDaysOf(med);
+    if (low || zero){
+      if (!cyc){ cyc = S.cycles[med.id] = {id:uid(), at:now, low:false, zero:false}; }
+      if (zero && !cyc.zero){ cyc.zero = true; cyc.low = true; created.push(addAlert(med, 'zero', cyc.id, f, now)); }
+      else if (low && !cyc.low){ cyc.low = true; created.push(addAlert(med, 'low', cyc.id, f, now)); }
+    } else if (cyc){
+      resolveAlerts(a => a.cyc === cyc.id, now);
+      S.cycles[med.id] = null;
+    }
+    const exp = med.status !== 'discontinued' && f.stock > 0 ? sn.exp[med.id] : null;
+    const expKey = exp ? med.id + '|' + exp : null;
+    resolveAlerts(a => a.m === med.id && a.type === 'expiry' && a.key !== expKey, now);
+    if (exp && diffDays(t, exp) <= S.settings.expiryDays && !S.alerts.some(a => a.key === expKey)){
+      created.push(addAlert(med, 'expiry', null, f, now, {exp, key:expKey}));
+    }
+  }
+  return created;
+}
+
+/* ---------- UI helpers ---------- */
+const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const I = {
+  today: SV('<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/>'),
+  family: SV('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.2" cy="9" r="2.5"/><path d="M16.5 14.6c2.5.2 4.3 1.9 5 4.9"/>'),
+  pill: SV('<rect x="2.6" y="8.2" width="18.8" height="7.6" rx="3.8" transform="rotate(-38 12 12)"/><path d="M9.6 7.4l4.8 9.2"/>'),
+  bell: SV('<path d="M6 9.5a6 6 0 1 1 12 0c0 5.6 2.4 7 2.4 7H3.6S6 15.1 6 9.5z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/>'),
+  history: SV('<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.5v5h5M12 7.5V12l3 2"/>'),
+  gear: SV('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+  plus: SV('<path d="M12 5v14M5 12h14"/>'),
+  close: SV('<path d="M6 6l12 12M18 6L6 18"/>'),
+  lock: SV('<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>')
+};
+const U = {dashMember:'', dashCat:'', medQ:'', medMember:'', medCat:'', medStatus:'', memberTab:'active', hMem:'', hMed:'', hCat:'', hFrom:'', hTo:'', hLimit:150};
+const people = n => n === 1 ? '1 person' : `${n} people`;
+const avatar = (mem, cls) => mem ? `<span class="av ${cls||''}" style="--c:${esc(mem.color)}" aria-hidden="true">${esc(initial(mem.name))}</span>` : '';
+const chip = st => `<span class="chip s-${st.key}">${esc(st.label)}</span>`;
+const btn = (act, label, id, cls) => `<button type="button" class="btn ${cls||''}" data-act="${act}" data-id="${esc(id||'')}">${label}</button>`;
+function meter(med, f, st, lg){
+  const ref = Math.max(f.stock, med.unitsPerPack || 0, 1);
+  const countable = ['tablet','capsule'].includes(med.unit) && ref <= 30;
+  const label = `${fmtQty(f.stock, med.unit)} left`;
+  if (countable){
+    const n = Math.ceil(ref), full = Math.floor(f.stock + 1e-9), half = (f.stock - full) >= 0.25;
+    let h = '';
+    for (let i = 0; i < n; i++) h += `<i class="${i < full ? 'on' : (i === full && half ? 'half' : '')}"></i>`;
+    const cols = Math.min(n, 15);
+    return `<span class="pips ${lg?'lg':''} s-${st.key}" style="--cols:${cols}" role="img" aria-label="${esc(label)}">${h}</span>`;
+  }
+  const pct = Math.max(0, Math.min(100, f.stock / ref * 100));
+  return `<span class="bar ${lg?'lg':''} s-${st.key}" role="img" aria-label="${esc(label)}"><i style="width:${pct}%"></i></span>`;
+}
+function selectHtml(id, key, value, opts, allLabel){
+  return `<select id="${id}" data-filter="${key}" aria-label="${esc(allLabel)}"><option value="">${esc(allLabel)}</option>${opts.map(([v,l]) => `<option value="${esc(v)}"${v===value?' selected':''}>${esc(l)}</option>`).join('')}</select>`;
+}
+const memberOpts = () => S.members.filter(m => !m.archived).map(m => [m.id, m.name]);
+function filterMeds(mem, cat){ return S.medicines.filter(m => (!mem || m.memberId === mem) && (!cat || m.category === cat) && !isArchivedMed(m)); }
+function isExpSoon(m){ const e = C.exp[m.id]; return !!e && m.status !== 'discontinued' && C.fc[m.id].stock > 0 && diffDays(today(), e) <= S.settings.expiryDays; }
+function recText(rec){
+  if (!rec || rec.type === 'daily') return 'Every day';
+  if (rec.type === 'weekdays') return rec.days.length === 7 ? 'Every day' : 'Every ' + [1,2,3,4,5,6,0].filter(d => rec.days.includes(d)).map(d => DOW[d]).join(', ');
+  if (rec.type === 'everyN') return `Every ${rec.n} days`;
+  return '';
+}
+const slotsText = (slots, unit) => slots.filter(s => s.qty > 0).map(s => `${slotName(s)} ${fmtQty(s.qty, unit)}`).join(', ');
+function medRow(m, showMember){
+  const mem = memberById(m.memberId), f = C.fc[m.id], st = C.st[m.id];
+  const sub = [showMember !== false && mem ? mem.name : '', m.category].filter(Boolean).join(', ');
+  let cover;
+  if (m.prn) cover = `<div>Taken when needed</div>`;
+  else if (m.status !== 'active') cover = `<div class="sub">${m.status === 'paused' ? 'Paused' : 'Stopped ' + fmtShort(m.discontinuedOn)}</div>`;
+  else cover = f.runout ? `<div>Runs out ${fmtShort(f.runout.date)}</div><div class="sub">${coverText(f)} of cover</div>` : `<div class="sub">${f.hasFuture ? 'Covered for over a year' : 'No upcoming doses'}</div>`;
+  return `<a class="row" href="#medicine-${m.id}">
+    <div class="r-main">${showMember !== false ? avatar(mem) : ''}<div style="min-width:0"><div class="name">${esc(m.name)}</div><div class="sub">${esc(sub || m.type)}</div></div></div>
+    <div class="r-stock">${meter(m, f, st)}<span class="sub">${esc(fmtQty(f.stock, m.unit))} left</span></div>
+    <div class="r-cover">${cover}</div>
+    <div class="r-end">${chip(st)}</div></a>`;
+}
+const notFound = msg => `<section class="panel empty"><h3>Not found</h3><p>${esc(msg)}</p><a class="btn" href="#today">Go to Today</a></section>`;
+
+/* ---------- Shell ---------- */
+const NAV = [['today','Today',I.today],['family','Family',I.family],['medicines','Medicines',I.pill],['alerts','Alerts',I.bell],['history','History',I.history],['app-settings','Settings',I.gear]];
+function shell(){
+  return `<div class="app">
+  <aside class="side">
+    <a class="brand" href="#today"><span class="logo" aria-hidden="true"></span>Family medicines</a>
+    <nav class="nav" aria-label="Main">${NAV.map(([r,l,i]) => `<a href="#${r}" data-route="${r}">${i}<span>${l}</span>${r==='alerts'?'<span class="badge" data-badge hidden></span>':''}</a>`).join('')}</nav>
+    <button type="button" class="btn btn-primary block" data-act="add-med">${I.plus}Add medicine</button>
+    <div class="grow"></div>
+    <p class="side-note">Saved in this browser only. Back up from Settings.</p>
+  </aside>
+  <div>
+    <header class="topbar"><a class="brand" href="#today"><span class="logo" aria-hidden="true"></span>Family medicines</a>
+      <div class="btn-row"><button type="button" class="icon-btn" data-act="add-med" aria-label="Add medicine">${I.plus}</button><a class="icon-btn" href="#app-settings" aria-label="Settings">${I.gear}</a></div></header>
+    <main id="main" tabindex="-1"></main>
+  </div>
+  <nav class="tabbar" aria-label="Main">${NAV.slice(0,5).map(([r,l,i]) => `<a href="#${r}" data-route="${r}">${i}<span>${l}</span>${r==='alerts'?'<span class="badge" data-badge hidden></span>':''}</a>`).join('')}</nav>
+  </div>`;
+}
+function parseRoute(){
+  const h = decodeURIComponent(location.hash.slice(1)) || 'today';
+  if (h.startsWith('member-')) return {name:'member', id:h.slice(7), nav:'family'};
+  if (h.startsWith('medicine-')) return {name:'medicine', id:h.slice(9), nav:'medicines'};
+  if (VIEWS[h]) return {name:h, nav:h};
+  return {name:'today', nav:'today'};
+}
+function updateNav(nav){
+  document.querySelectorAll('[data-route]').forEach(a => { if (a.dataset.route === nav) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  const open = S.alerts.filter(a => !a.res).length;
+  document.querySelectorAll('[data-badge]').forEach(b => { b.hidden = !open; b.textContent = open; });
+}
+
+/* ---------- Install as an app ---------- */
+let deferredInstall = null;
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const canInstallHere = () => location.protocol === 'https:' || location.hostname === 'localhost';
+function installHow(){
+  if (isStandalone()) return {can:false, text:'You’re using the installed app.'};
+  if (!canInstallHere()) return {can:false, text:'Open the app from its web link (for example your GitHub Pages link) to install it on your phone.'};
+  if (deferredInstall) return {can:true, text:'Install it to open it from your home screen, full screen, even without internet.'};
+  if (isIOS()) return {can:false, text:'In Safari, tap the Share button, then Add to Home Screen. Use the app from that icon from then on.'};
+  return {can:false, text:'In your browser menu, choose Install app or Add to Home screen.'};
+}
+function installBanner(){
+  if (isStandalone() || !canInstallHere() || S.settings.installDismissed) return '';
+  if (!deferredInstall && !isIOS()) return '';
+  const h = installHow();
+  return `<section class="install"><p><b>Use it like an app.</b> ${esc(h.text)}</p><div class="btn-row">${h.can ? btn('install','Install app','','btn-primary btn-sm') : ''}${btn('dismiss-install','Not now','','btn-sm btn-ghost')}</div></section>`;
+}
+
+/* ---------- Views ---------- */
+function viewToday(){
+  const t = today();
+  const mems = S.members.filter(m => !m.archived);
+  const hi = S.profile && S.profile.name ? `, ${esc(S.profile.name)}` : '';
+  if (!mems.length) return `<div class="page-head"><div><h1>${esc(fmtLong(t))}</h1><p class="sub">Welcome${hi}. Start by adding the people whose medicines you look after.</p></div></div>
+    <section class="panel empty"><h3>No family members yet</h3><p>Add a profile for each person, then add their medicines and stock.</p>
+    <div class="btn-row center"><button type="button" class="btn btn-primary" data-act="add-member">${I.plus}Add family member</button><button type="button" class="btn" data-act="sample">Try with a sample family</button></div></section>`;
+  const meds = filterMeds(U.dashMember, U.dashCat);
+  const act = meds.filter(m => m.status === 'active');
+  let low = 0, refill = 0, expSoon = 0, inStock = 0;
+  for (const m of act){ const s = C.st[m.id].key; if (s === 'warn') low++; if (s === 'bad') refill++; if (C.fc[m.id].stock > 0) inStock++; if (isExpSoon(m)) expSoon++; }
+  const medIds = new Set(meds.map(m => m.id));
+  const openA = S.alerts.filter(a => !a.res && (a.type === 'low' || a.type === 'zero') && medIds.has(a.m));
+  const shownMems = U.dashMember ? mems.filter(m => m.id === U.dashMember) : mems;
+
+  const banner = openA.length ? `<section class="banner" aria-labelledby="banner-h"><div class="b-icon">${I.bell}</div><div class="b-body"><h2 id="banner-h">${openA.length === 1 ? '1 medicine needs' : openA.length + ' medicines need'} a refill</h2><ul>${openA.map(a => {
+      const m = medById(a.m); if (!m) return ''; const mem = memberById(m.memberId), f = C.fc[m.id];
+      const what = f.stock <= 0 ? 'expected stock is zero' : `${coverText(f)} of cover, runs out ${fmtShort(f.runout ? f.runout.date : t)}`;
+      return `<li><span><a class="name" href="#medicine-${m.id}">${esc(m.name)}</a> for ${esc(mem ? mem.name : '')}: ${esc(what)}</span><span class="btn-row">${btn('count','Count now',m.id,'btn-sm')}${btn('purchase','Record purchase',m.id,'btn-sm')}</span></li>`;
+    }).join('')}</ul></div></section>` : '';
+
+  const kpi = (n, label, cls, act, status) => `<button type="button" class="kpi ${cls||''}" data-act="${act}" data-status="${status||''}"><b>${n}</b><span>${label}</span></button>`;
+  const kpis = `<section class="kpis" aria-label="Summary">
+    ${kpi(shownMems.length, shownMems.length === 1 ? 'Family member' : 'Family members', '', 'go-family')}
+    ${kpi(act.length, 'Active medicines', '', 'go-meds', '')}
+    ${kpi(low, 'Running low', low ? 'is-warn' : '', 'go-meds', 'warn')}
+    ${kpi(refill, 'Need refill now', refill ? 'is-bad' : '', 'go-meds', 'bad')}
+    ${kpi(expSoon, 'Expiring soon', expSoon ? 'is-warn' : '', 'go-meds', 'exp')}
+    ${kpi(inStock, 'Medicines in stock', '', 'go-meds', 'instock')}</section>`;
+
+  const refills = act.filter(m => !m.prn && C.fc[m.id].runout).sort((a,b) => C.fc[a.id].cover - C.fc[b.id].cover || C.fc[a.id].runout.ts - C.fc[b.id].runout.ts).slice(0, 6);
+  const refillPanel = `<section class="panel"><div class="panel-head"><h2>Upcoming refills</h2><a class="link" href="#medicines">All medicines</a></div>
+    ${refills.length ? `<div class="rows compact">${refills.map(m => {
+      const mem = memberById(m.memberId), f = C.fc[m.id], st = C.st[m.id];
+      return `<a class="row" href="#medicine-${m.id}"><div class="r-main">${avatar(mem,'sm')}<div style="min-width:0"><div class="name">${esc(m.name)}</div><div class="sub">${esc(mem.name)}, ${esc(fmtQty(f.stock, m.unit))} left</div></div></div>
+      <div class="r-cover"><div>${fmtShort(f.runout.date)}</div><div class="sub">${coverText(f)} of cover</div></div><div class="r-end">${chip(st)}</div></a>`;
+    }).join('')}</div>` : `<p class="muted">Nothing is due to run out. Refills will show here, soonest first.</p>`}</section>`;
+
+  const items = todayItems(act);
+  const now = Date.now();
+  const schedPanel = `<section class="panel"><div class="panel-head"><h2>Today’s doses</h2><span class="sub">${items.length ? plural(items.length,'dose') : ''}</span></div>
+    ${items.length ? `<ul class="sched">${items.map(it => schedRow(it, now)).join('')}</ul>` : `<p class="muted">No scheduled doses today.</p>`}</section>`;
+
+  const fam = `<section><div class="section-head"><h2>Family</h2><a class="link" href="#family">Manage family</a></div><div class="members">${shownMems.map(memberCard).join('')}</div></section>`;
+  const cats = categories();
+  return `<div class="page-head"><div><h1>${esc(fmtLong(t))}</h1><p class="sub">${people(mems.length)}${mems.length===1?'':''}, ${plural(S.medicines.filter(m => m.status === 'active' && !isArchivedMed(m)).length,'active medicine')}</p></div>
+    <div class="filters">${selectHtml('dash-mem','dashMember',U.dashMember,memberOpts(),'Everyone')}${cats.length ? selectHtml('dash-cat','dashCat',U.dashCat,cats.map(c=>[c,c]),'All categories') : ''}</div></div>
+    <div class="stack">${installBanner()}${banner}${kpis}<div class="grid-2">${schedPanel}${refillPanel}</div>${fam}</div>`;
+}
+function todayItems(meds){
+  const t = today(), items = [];
+  for (const m of meds){
+    if (m.prn) continue;
+    for (const o of occsOnDate(m, versionsOf(m.id), t)){
+      const key = m.id + '|' + t + '|' + o.slot;
+      const d = S.doses[key];
+      if (!d && o.ts < m.trackFrom) continue;
+      items.push({m, o, key, d});
+    }
+  }
+  return items.sort((a,b) => a.o.ts - b.o.ts);
+}
+function doseStatus(d, key, opts){
+  const k = esc(key);
+  if (!d) return {status:`<span class="muted small">Due</span>`, action:''};
+  switch (d.st){
+    case 'auto': return {status:'<span class="tag ok">Deducted</span>', action:`<button type="button" class="btn btn-sm" data-act="skip" data-key="${k}">Mark skipped</button>`};
+    case 'short': return {status:'<span class="tag bad">Not enough stock</span>', action:''};
+    case 'taken': return {status:'<span class="tag ok">Taken</span>', action:''};
+    case 'skipped': return {status:'<span class="tag idle">Skipped</span>', action:`<button type="button" class="btn btn-sm btn-ghost" data-act="undo-skip" data-key="${k}">Undo</button>`};
+    case 'pending': return {status:'<span class="tag warn">Not confirmed</span>', action:`<button type="button" class="btn btn-sm btn-primary" data-act="take" data-key="${k}">Taken</button><button type="button" class="btn btn-sm" data-act="skip" data-key="${k}">Skipped</button>`};
+  }
+  return {status:'', action:''};
+}
+function schedRow(it, now){
+  const {m, o, key, d} = it, mem = memberById(m.memberId);
+  const ds = doseStatus(d, key);
+  return `<li class="sched-item ${o.ts <= now ? 'past' : ''}"><span class="s-time">${fmtTime(o.time)}</span>${avatar(mem)}
+    <span class="s-what"><a class="name" href="#medicine-${m.id}">${esc(m.name)}</a><span class="sub">${esc(mem.name)}, ${esc(fmtQty(o.qty, m.unit))}</span></span>
+    <span class="s-status">${ds.status}${ds.action ? `<span class="btn-row">${ds.action}</span>` : ''}</span></li>`;
+}
+function memberCard(mem){
+  const meds = S.medicines.filter(m => m.memberId === mem.id && m.status === 'active');
+  const bad = meds.filter(m => C.st[m.id].key === 'bad').length, warn = meds.filter(m => C.st[m.id].key === 'warn').length;
+  let summary;
+  if (!meds.length) summary = `<span class="sub">No active medicines</span>`;
+  else {
+    const parts = [];
+    if (bad) parts.push(`<span class="chip s-bad">${bad} need refill</span>`);
+    if (warn) parts.push(`<span class="chip s-warn">${warn} running low</span>`);
+    if (!bad && !warn) parts.push(`<span class="chip s-ok">All stocked</span>`);
+    summary = parts.join('');
+  }
+  return `<a class="mcard" href="#member-${mem.id}"><div class="mc-top">${avatar(mem,'lg')}<div><h3>${esc(mem.name)}</h3><p class="sub">${esc(mem.relation)}</p></div></div>
+    <p>${plural(meds.length,'active medicine')}</p><div class="counts">${summary}</div></a>`;
+}
+function viewFamily(){
+  const mems = S.members.filter(m => !m.archived), arch = S.members.filter(m => m.archived);
+  return `<div class="page-head"><div><h1>Family</h1><p class="sub">${people(mems.length)}</p></div><button type="button" class="btn btn-primary" data-act="add-member">${I.plus}Add family member</button></div>
+    ${mems.length ? `<div class="members">${mems.map(memberCard).join('')}</div>` : `<section class="panel empty"><h3>No family members yet</h3><p>Add a profile for each person whose medicines you look after.</p><button type="button" class="btn btn-primary" data-act="add-member">Add family member</button></section>`}
+    ${arch.length ? `<section class="panel" style="margin-top:24px"><h2 style="margin-bottom:10px">Archived</h2><div class="rows">${arch.map(m => `<div class="row" style="grid-template-columns:1fr auto"><div class="r-main">${avatar(m)}<div><div class="name">${esc(m.name)}</div><div class="sub">${esc(m.relation)}</div></div></div>${btn('unarchive-member','Restore',m.id,'btn-sm')}</div>`).join('')}</div></section>` : ''}`;
+}
+function viewMember(id){
+  const mem = memberById(id);
+  if (!mem) return notFound('That family member isn’t here any more.');
+  const meds = S.medicines.filter(m => m.memberId === id);
+  const groups = {active:meds.filter(m => m.status === 'active'), paused:meds.filter(m => m.status === 'paused'), discontinued:meds.filter(m => m.status === 'discontinued')};
+  const tab = groups[U.memberTab] ? U.memberTab : 'active';
+  const list = groups[tab].sort((a,b) => C.st[a.id].rank - C.st[b.id].rank || a.name.localeCompare(b.name));
+  const labels = {active:'Active', paused:'Paused', discontinued:'Discontinued'};
+  return `<a class="back" href="#family">Family</a>
+    <div class="page-head"><div class="mc-top">${avatar(mem,'lg')}<div><h1>${esc(mem.name)}</h1><p class="sub">${esc(mem.relation)}${mem.archived ? ', archived' : ''}</p></div></div>
+    <div class="btn-row">${btn('add-med',`${I.plus}Add medicine`,mem.id,'btn-primary')}${btn('edit-member','Edit',mem.id)}${meds.length ? btn('archive-member','Archive',mem.id,'btn-ghost') : btn('delete-member','Delete',mem.id,'btn-danger')}</div></div>
+    <div class="seg" role="group" aria-label="Show medicines" style="margin-bottom:16px">${Object.keys(groups).map(k => `<button type="button" data-act="member-tab" data-tab="${k}" aria-pressed="${k===tab}">${labels[k]} ${groups[k].length}</button>`).join('')}</div>
+    <section class="panel">${list.length ? `<div class="rows">${list.map(m => medRow(m, false)).join('')}</div>` : `<div class="empty"><h3>No ${labels[tab].toLowerCase()} medicines</h3>${tab === 'active' ? `<p>Add ${esc(mem.name)}’s first medicine with its stock and schedule.</p>${btn('add-med','Add medicine',mem.id,'btn-primary')}` : ''}</div>`}</section>`;
+}
+const STATUS_OPTS = [['all','Including discontinued'],['bad','Refill now'],['warn','Running low'],['ok','In stock'],['exp','Expiring soon'],['instock','Has stock'],['paused','Paused'],['discontinued','Discontinued'],['prn','Taken when needed']];
+function medMatchesStatus(m, s){
+  const st = C.st[m.id].key;
+  switch (s){
+    case '': return m.status !== 'discontinued';
+    case 'all': return true;
+    case 'bad': case 'warn': case 'ok': return m.status === 'active' && st === s && !(s === 'ok' && m.prn && false);
+    case 'exp': return isExpSoon(m);
+    case 'instock': return m.status === 'active' && C.fc[m.id].stock > 0;
+    case 'paused': return m.status === 'paused';
+    case 'discontinued': return m.status === 'discontinued';
+    case 'prn': return !!m.prn && m.status !== 'discontinued';
+  }
+  return true;
+}
+function viewMedicines(){
+  const q = U.medQ.trim().toLowerCase();
+  const list = filterMeds(U.medMember, U.medCat).filter(m => medMatchesStatus(m, U.medStatus)).filter(m => {
+    if (!q) return true;
+    const mem = memberById(m.memberId);
+    return [m.name, m.category, m.notes, mem && mem.name].some(x => x && x.toLowerCase().includes(q));
+  }).sort((a,b) => C.st[a.id].rank - C.st[b.id].rank || a.name.localeCompare(b.name));
+  const cats = categories();
+  return `<div class="page-head"><div><h1>Medicines</h1><p class="sub">${plural(list.length,'medicine')} shown</p></div>${btn('add-med',`${I.plus}Add medicine`,'','btn-primary')}</div>
+    <div class="toolbar"><label class="sr-only" for="med-q">Search medicines</label><input type="search" id="med-q" data-filter="medQ" value="${esc(U.medQ)}" placeholder="Search by medicine, person or note">
+    ${selectHtml('med-mem','medMember',U.medMember,memberOpts(),'Everyone')}${cats.length ? selectHtml('med-cat','medCat',U.medCat,cats.map(c=>[c,c]),'All categories') : ''}${selectHtml('med-st','medStatus',U.medStatus,STATUS_OPTS,'Current medicines')}</div>
+    <section class="panel">${list.length ? `<div class="rows">${list.map(m => medRow(m)).join('')}</div>` : `<div class="empty"><h3>${S.medicines.length ? 'No medicines match' : 'No medicines yet'}</h3><p>${S.medicines.length ? 'Try clearing the search or filters.' : 'Add a medicine with its stock and schedule to start tracking.'}</p>${S.medicines.length ? '' : btn('add-med','Add medicine','','btn-primary')}</div>`}</section>`;
+}
+function ledgerRows(m){
+  const rows = S.txns.filter(t => t.m === m.id).map(t => ({at:t.at, label:TXN_LABEL[t.type] || t.type, q:t.q, note:t.note || ''}));
+  for (const k in S.doses){ const d = S.doses[k]; if (d.m === m.id && d.ded > 0) rows.push({at:d.t, label:'Scheduled dose', q:-d.ded, note:slotName(d) + (d.st === 'short' ? ', not enough stock' : '')}); }
+  rows.sort((a,b) => a.at - b.at);
+  let bal = 0; for (const r of rows){ bal = round(bal + r.q); r.bal = bal; }
+  return rows.reverse();
+}
+function viewMedicine(id){
+  const m = medById(id);
+  if (!m) return notFound('That medicine isn’t here any more.');
+  const mem = memberById(m.memberId) || {name:'Unknown', color:COLORS[0], relation:''};
+  const f = C.fc[m.id], st = C.st[m.id], vers = versionsOf(m.id), cur = currentVersion(m, vers);
+  const adh = adherence(m), exp = C.exp[m.id];
+  const lastCount = [...S.counts].reverse().find(c => c.m === m.id);
+  const acts = [];
+  if (m.status !== 'discontinued'){
+    acts.push(btn('count','Count now',m.id,'btn-primary'));
+    if (m.prn) acts.push(btn('prn-dose','Record a dose',m.id));
+    acts.push(btn('purchase','Record purchase',m.id), btn('adjust','Adjust stock',m.id));
+    if (!m.prn) acts.push(btn('schedule','Change dose or schedule',m.id));
+    acts.push(btn('edit-med','Edit details',m.id));
+    acts.push(m.status === 'paused' ? btn('resume','Resume',m.id) : btn('pause','Pause',m.id));
+    acts.push(btn('discontinue','Discontinue',m.id,'btn-danger'));
+  } else acts.push(btn('edit-med','Edit details',m.id), btn('delete-med','Delete medicine',m.id,'btn-danger'));
+
+  const dd = exp ? diffDays(today(), exp) : null;
+  const stats = `<dl class="stats">
+    <div><dt>Days of cover</dt><dd>${m.prn ? '—' : coverText(f)}<small>${m.prn ? 'Not forecast for medicines taken when needed' : f.last ? `Last covered dose ${fmtDay(f.last.date)}, ${esc(slotName(f.last).toLowerCase())}` : f.hasFuture ? 'No upcoming doses are covered' : 'No upcoming doses'}</small></dd></div>
+    <div><dt>Runs out</dt><dd>${f.runout ? fmtDate(f.runout.date) : '—'}<small>${f.runout ? 'First dose without stock: ' + esc(slotName(f.runout).toLowerCase()) : m.prn ? '' : f.hasFuture ? 'Stock lasts beyond a year' : ''}</small></dd></div>
+    <div><dt>Average daily use</dt><dd>${m.prn ? '—' : esc(fmtQty(f.avgDaily, m.unit))}<small>${m.prn ? '' : 'Next 28 days on the current schedule'}</small></dd></div>
+    <div><dt>Adherence, last 30 days</dt><dd>${adh == null ? '—' : Math.round(adh*100) + '%'}<small>From skipped doses and stock counts</small></dd></div>
+    <div><dt>Oldest stock expires</dt><dd>${exp ? fmtDate(exp) : '—'}<small>${exp ? (dd < 0 ? 'Expired' : dd <= S.settings.expiryDays ? `In ${plural(dd,'day')}` : '') : 'Add an expiry date when you record a purchase'}</small></dd></div>
+    <div><dt>Last counted</dt><dd>${lastCount ? fmtShort(dstr(new Date(lastCount.at))) : '—'}<small>${lastCount ? `Counted ${esc(fmtQty(lastCount.counted, m.unit))}, expected ${esc(num(lastCount.expected))}` : 'Count the strip to check doses were taken'}</small></dd></div></dl>`;
+
+  const verRows = [...vers].reverse().map(v => {
+    const voided = v.to && v.to < v.from;
+    return `<tr><td class="num">${v.n}</td><td class="nowrap">${fmtDate(v.from)}</td><td class="nowrap">${voided ? 'Replaced before it started' : v.to ? fmtDate(v.to) : 'Ongoing'}</td><td>${esc(slotsText(v.slots, m.unit))}</td><td>${esc(recText(v.rec))}</td></tr>`;
+  }).join('');
+  const schedPanel = m.prn ? '' : `<section class="panel"><div class="panel-head"><h2>Schedule</h2>${m.status !== 'discontinued' ? btn('schedule','Change',m.id,'btn-sm') : ''}</div>
+    ${cur ? `<p style="margin-bottom:6px"><b>${esc(slotsText(cur.slots, m.unit))}</b></p><p class="muted">${esc(recText(cur.rec))}, from ${fmtDate(m.startDate)}${m.endDate ? ' to ' + fmtDate(m.endDate) : ''}. ${m.autoDeduct ? 'Doses are deducted automatically.' : 'You confirm each dose.'}</p>` : '<p class="muted">No schedule.</p>'}
+    ${vers.length > 1 ? `<h3 style="margin:18px 0 6px">Schedule history</h3><div class="tbl-wrap"><table><thead><tr><th class="num">Version</th><th>From</th><th>To</th><th>Doses</th><th>Repeat</th></tr></thead><tbody>${verRows}</tbody></table></div>` : ''}</section>`;
+
+  const since = Date.now() - 14*DAY;
+  const doses = Object.entries(S.doses).filter(([k,d]) => d.m === m.id && d.t >= since).sort((a,b) => b[1].t - a[1].t);
+  const dosePanel = m.prn ? '' : `<section class="panel"><div class="panel-head"><h2>Doses, last 14 days</h2></div>
+    ${doses.length ? `<div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Time</th><th class="num">Quantity</th><th>Status</th><th></th></tr></thead><tbody>${doses.map(([k,d]) => {
+      const ds = doseStatus(d, k);
+      return `<tr><td class="nowrap">${fmtDay(d.d)}</td><td class="nowrap">${esc(slotName(d))}</td><td class="num">${esc(fmtQty(d.q, m.unit))}</td><td>${ds.status}</td><td><div class="btn-row">${ds.action}</div></td></tr>`;
+    }).join('')}</tbody></table></div>` : '<p class="muted">No doses have fallen due yet.</p>'}</section>`;
+
+  const led = ledgerRows(m).slice(0, 60);
+  const ledPanel = `<section class="panel"><div class="panel-head"><h2>Stock history</h2><span class="sub">Newest first</span></div>
+    ${led.length ? `<div class="tbl-wrap"><table><thead><tr><th>When</th><th>Entry</th><th class="num">Change</th><th class="num">Balance</th><th>Note</th></tr></thead><tbody>${led.map(r => `<tr><td class="nowrap">${fmtTs(r.at)}</td><td>${esc(r.label)}</td><td class="num ${r.q > 0 ? 'pos-q' : 'neg-q'}">${r.q > 0 ? '+' : ''}${esc(num(r.q))}</td><td class="num">${esc(num(r.bal))}</td><td>${esc(r.note)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No stock recorded yet.</p>'}</section>`;
+
+  const counts = S.counts.filter(c => c.m === m.id).reverse();
+  const countPanel = counts.length ? `<section class="panel"><div class="panel-head"><h2>Stock counts</h2></div><div class="tbl-wrap"><table><thead><tr><th>When</th><th class="num">Expected</th><th class="num">Counted</th><th class="num">Difference</th><th>Meaning</th></tr></thead><tbody>${counts.map(c => `<tr><td class="nowrap">${fmtTs(c.at)}</td><td class="num">${esc(num(c.expected))}</td><td class="num">${esc(num(c.counted))}</td><td class="num">${c.variance > 0 ? '+' : ''}${esc(num(c.variance))}</td><td>${esc(c.variance > 0 ? (m.prn ? 'More than expected' : `About ${num(c.missed)} missed ${c.missed === 1 ? 'dose' : 'doses'}`) : c.variance < 0 ? (c.reason || 'Less than expected') : 'Matched')}</td></tr>`).join('')}</tbody></table></div></section>` : '';
+
+  const pendNote = f.pending > 0 ? ` ${esc(fmtQty(f.pending, m.unit))} in doses waiting for you to confirm.` : '';
+  return `<a class="back" href="#medicines">All medicines</a>
+    <div class="page-head"><div><h1>${esc(m.name)}</h1><p class="sub"><a href="#member-${mem.id}" class="link">${esc(mem.name)}</a>, ${esc(m.type)}${m.category ? ', ' + esc(m.category) : ''}</p></div>${chip(st)}</div>
+    <div class="stack">
+      <section class="panel"><div class="stock-hero"><div><p class="muted small">Expected stock</p><p class="big-num">${esc(fmtQty(f.stock, m.unit))}</p></div>${meter(m, f, st, true)}</div>
+        <p class="note" style="margin-top:12px">${m.autoDeduct && !m.prn ? 'Expected stock assumes every scheduled dose was taken. Count what’s left to check.' : 'Stock changes only when you record doses, purchases or counts.'}${pendNote}</p>
+        <div class="btn-row actions" style="margin-top:16px">${acts.join('')}</div></section>
+      ${stats}
+      ${m.notes ? `<section class="panel"><h2 style="margin-bottom:8px">Notes</h2><p style="white-space:pre-wrap">${esc(m.notes)}</p></section>` : ''}
+      ${m.status === 'discontinued' ? `<p class="warnbar">Discontinued on ${fmtDate(m.discontinuedOn)}${m.discontinueReason ? ': ' + esc(m.discontinueReason) : ''}.</p>` : ''}
+      ${schedPanel}${dosePanel}
+      ${countPanel}${ledPanel}</div>`;
+}
+function viewAlerts(){
+  const open = S.alerts.filter(a => !a.res).sort((a,b) => b.at - a.at);
+  const closed = S.alerts.filter(a => a.res).sort((a,b) => b.res - a.res).slice(0, 30);
+  const colour = {low:'var(--bad)', zero:'var(--bad)', expiry:'var(--warn)'};
+  const item = (a, isOpen) => {
+    const m = medById(a.m);
+    const actions = isOpen && m ? (a.type === 'expiry' ? btn('adjust','Adjust stock',m.id,'btn-sm') + btn('purchase','Record purchase',m.id,'btn-sm') : btn('count','Count now',m.id,'btn-sm btn-primary') + btn('purchase','Record purchase',m.id,'btn-sm')) + `<a class="btn btn-sm btn-ghost" href="#medicine-${m.id}">View medicine</a>` : '';
+    return `<div class="alert-item ${!a.read && isOpen ? 'unread' : ''}" style="--c:${colour[a.type]}"><span class="dot"></span><div><h3>${esc(a.title)}</h3><p class="muted" style="margin-top:4px">${esc(a.body)}</p><p class="sub" style="margin-top:6px">${fmtTs(a.at)}${a.res ? `. Resolved ${fmtTs(a.res)}` : ''}</p>${actions ? `<div class="btn-row">${actions}</div>` : ''}</div></div>`;
+  };
+  const html = `<div class="page-head"><div><h1>Alerts</h1><p class="sub">${open.length === 1 ? '1 alert needs attention' : open.length ? open.length + ' alerts need attention' : 'Nothing needs attention'}</p></div>${S.settings.browserNotify ? '' : '<a class="link" href="#app-settings">Turn on browser notifications</a>'}</div>
+    <div class="stack"><section class="panel"><h2 style="margin-bottom:6px">Needs attention</h2>${open.length ? open.map(a => item(a, true)).join('') : '<p class="muted">You’ll be alerted here when a medicine has 2 days of stock or less, runs out, or is about to expire.</p>'}</section>
+    ${closed.length ? `<section class="panel"><h2 style="margin-bottom:6px">Resolved</h2>${closed.map(a => item(a, false)).join('')}</section>` : ''}</div>`;
+  let dirty = false;
+  for (const a of S.alerts) if (!a.read){ a.read = true; dirty = true; }
+  if (dirty) setTimeout(save, 0);
+  return html;
+}
+function historyEntries(){
+  const out = S.log.map(l => ({at:l.at, cat:l.cat, m:l.m, mem:l.mem, text:l.text}));
+  for (const k in S.doses){
+    const d = S.doses[k], med = medById(d.m);
+    out.push({at:d.t, cat:'dose', m:d.m, mem:med ? med.memberId : null, text:`${DOSE_LABEL[d.st] || d.st}: ${slotName(d).toLowerCase()}, ${fmtQty(d.q, med ? med.unit : 'unit')}`});
+  }
+  return out.sort((a,b) => b.at - a.at);
+}
+function filteredHistory(){
+  return historyEntries().filter(e => (!U.hMem || e.mem === U.hMem) && (!U.hMed || e.m === U.hMed) && (!U.hCat || e.cat === U.hCat) && (!U.hFrom || dstr(new Date(e.at)) >= U.hFrom) && (!U.hTo || dstr(new Date(e.at)) <= U.hTo));
+}
+function viewHistory(){
+  const rows = filteredHistory();
+  const medOpts = S.medicines.filter(m => !U.hMem || m.memberId === U.hMem).map(m => [m.id, m.name + (U.hMem ? '' : ' (' + ((memberById(m.memberId)||{}).name || '') + ')')]);
+  const shown = rows.slice(0, U.hLimit);
+  return `<div class="page-head"><div><h1>History</h1><p class="sub">${plural(rows.length,'entry').replace('entrys','entries')}</p></div>${rows.length ? `<button type="button" class="btn" data-act="export-csv">Export CSV</button>` : ''}</div>
+    <div class="toolbar">${selectHtml('h-mem','hMem',U.hMem,S.members.map(m => [m.id, m.name]),'Everyone')}${selectHtml('h-med','hMed',U.hMed,medOpts,'All medicines')}${selectHtml('h-cat','hCat',U.hCat,Object.entries(CAT_LABEL),'All types')}
+      <label class="sr-only" for="h-from">From date</label><input type="date" id="h-from" data-filter="hFrom" value="${esc(U.hFrom)}" style="width:auto"><label class="sr-only" for="h-to">To date</label><input type="date" id="h-to" data-filter="hTo" value="${esc(U.hTo)}" style="width:auto"></div>
+    <section class="panel">${shown.length ? `<div class="tbl-wrap"><table><thead><tr><th>When</th><th>Person</th><th>Medicine</th><th>Type</th><th>Details</th></tr></thead><tbody>${shown.map(e => {
+      const mem = memberById(e.mem), med = medById(e.m);
+      return `<tr><td class="nowrap">${fmtTs(e.at)}</td><td>${esc(mem ? mem.name : '')}</td><td>${med ? `<a href="#medicine-${med.id}">${esc(med.name)}</a>` : ''}</td><td>${esc(CAT_LABEL[e.cat] || e.cat)}</td><td>${esc(e.text)}</td></tr>`;
+    }).join('')}</tbody></table></div>${rows.length > shown.length ? `<div class="btn-row center" style="margin-top:14px"><button type="button" class="btn" data-act="hist-more">Show more</button></div>` : ''}` : '<div class="empty"><h3>No history to show</h3><p>Entries appear as you add medicines, record stock and doses fall due.</p></div>'}</section>`;
+}
+function viewSettings(){
+  const s = S.settings;
+  const auth = S.profile && S.profile.auth;
+  return `<div class="page-head"><div><h1>Settings</h1><p class="sub">Applies to this browser on this device</p></div></div>
+  <form id="settings-form" class="stack" novalidate>
+    <section class="panel"><h2 style="margin-bottom:14px">You</h2><div class="form-grid">
+      <div class="field"><label for="st-name">Your name</label><input type="text" id="st-name" name="name" maxlength="40" value="${esc(S.profile.name || '')}"></div>
+      <div class="field"><span class="lbl">Password</span><p class="muted">${auth ? 'A password is asked for when you open the app.' : 'No password is set.'}</p><div class="btn-row">${canHash ? `${btn('set-password', auth ? 'Change password' : 'Set a password', '', 'btn-sm')}${auth ? btn('remove-password','Remove password','','btn-sm btn-ghost') + btn('lock','Lock now','','btn-sm btn-ghost') : ''}` : '<span class="hint">Passwords need the app to be opened over https.</span>'}</div></div></div></section>
+    <section class="panel"><h2 style="margin-bottom:4px">Default dose times</h2><p class="muted" style="margin-bottom:14px">Used when you add a schedule. Existing schedules keep their times.</p><div class="form-grid">
+      ${SLOT_ORDER.map(k => `<div class="field"><label for="st-${k}">${SLOT_LABEL[k]}</label><input type="time" id="st-${k}" name="t_${k}" value="${esc(s.slotTimes[k])}"></div>`).join('')}</div></section>
+    <section class="panel"><h2 style="margin-bottom:14px">Alerts</h2><div class="form-grid">
+      <div class="field"><label for="st-low">Refill alert when stock covers</label><div class="inline"><input type="number" id="st-low" name="lowDays" min="0" max="60" step="1" value="${s.lowDays}"><span>days or less</span></div><span class="hint">Default for new medicines. Each medicine can have its own.</span></div>
+      <div class="field"><label for="st-amber">Show as running low at</label><div class="inline"><input type="number" id="st-amber" name="amberDays" min="1" max="90" step="1" value="${s.amberDays}"><span>days or less</span></div></div>
+      <div class="field"><label for="st-exp">Expiry alert</label><div class="inline"><input type="number" id="st-exp" name="expiryDays" min="0" max="365" step="1" value="${s.expiryDays}"><span>days before expiry</span></div></div>
+      <div class="field"><label for="st-theme">Appearance</label><select id="st-theme" name="theme"><option value="light"${s.theme==='light'?' selected':''}>Light</option><option value="system"${s.theme==='system'?' selected':''}>Match this device</option><option value="dark"${s.theme==='dark'?' selected':''}>Dark</option></select></div>
+      <label class="check full"><input type="checkbox" name="skipCountsMissed"${s.skipCountsMissed?' checked':''}><span><b>Count skipped doses as missed</b><br><span class="hint">Affects the adherence percentage.</span></span></label>
+      <label class="check full"><input type="checkbox" name="browserNotify"${s.browserNotify?' checked':''}${'Notification' in window ? '' : ' disabled'}><span><b>Browser notifications</b><br><span class="hint">Shows alerts as system notifications while the app is open in a tab.${'Notification' in window ? '' : ' Not supported in this browser.'}</span></span></label>
+    </div></section>
+    <div class="btn-row"><button type="submit" class="btn btn-primary">Save settings</button></div>
+  </form>
+  <section class="panel" style="margin-top:24px"><h2 style="margin-bottom:4px">Install on your phone</h2><p class="muted" style="margin-bottom:14px">${esc(installHow().text)}</p>${installHow().can ? btn('install','Install app','','btn-primary') : ''}</section>
+  <section class="panel" style="margin-top:24px"><h2 style="margin-bottom:4px">Your data</h2><p class="muted" style="margin-bottom:14px">Everything is stored only in this browser. Clearing browser data or changing device removes it, so download a backup regularly.</p>
+    <div class="btn-row">${btn('backup','Download backup')}${btn('restore','Restore from backup')}${S.members.length ? '' : btn('sample','Load a sample family')}${btn('erase','Erase all data','','btn-danger')}</div>
+    ${storageOk ? '' : '<p class="warnbar" style="margin-top:14px">This browser isn’t saving data. Changes will be lost when you close the tab.</p>'}</section>
+  <p class="note" style="margin-top:24px">This app tracks stock and schedules. It doesn’t give medical advice and never changes a dose by itself. Always follow your doctor’s instructions.</p>`;
+}
+const VIEWS = {today:viewToday, family:viewFamily, member:viewMember, medicines:viewMedicines, medicine:viewMedicine, alerts:viewAlerts, history:viewHistory, 'app-settings':viewSettings};
+
+/* ---------- Render ---------- */
+let unlocked = false;
+const canHash = !!(window.crypto && crypto.subtle && window.isSecureContext !== false);
+function render(){
+  const root = document.getElementById('root');
+  if (!S.profile){ root.innerHTML = viewSetup(); return; }
+  if (S.profile.auth && !unlocked){ root.innerHTML = viewLock(); setTimeout(() => { const el = document.getElementById('lock-pw'); el && el.focus(); }); return; }
+  if (!document.getElementById('main')) root.innerHTML = shell();
+  const main = document.getElementById('main');
+  const ae = document.activeElement;
+  const fid = ae && ae.id && main.contains(ae) ? ae.id : null;
+  let sel = null; try { sel = fid && ae.selectionStart != null ? [ae.selectionStart, ae.selectionEnd] : null; } catch(e){}
+  C = snap();
+  const r = parseRoute();
+  main.innerHTML = VIEWS[r.name](r.id);
+  decorateTables(main);
+  updateNav(r.nav);
+  if (fid){ const el = document.getElementById(fid); if (el){ el.focus(); if (sel && el.setSelectionRange) try { el.setSelectionRange(sel[0], sel[1]); } catch(e){} } }
+}
+function decorateTables(root){
+  root.querySelectorAll('table').forEach(t => {
+    const hs = [...t.querySelectorAll('thead th')].map(th => th.textContent.trim());
+    t.classList.add('rt');
+    t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => td.setAttribute('data-label', hs[i] || '')));
+  });
+}
+function viewSetup(){
+  return `<div class="gate"><form class="panel" id="setup-form" novalidate><span class="logo lg" aria-hidden="true"></span><h1>Family medicines</h1>
+    <p class="muted">Keep track of everyone’s medicines, stock and refills in one place. Your data stays in this browser on this device.</p>
+    <div class="field"><label for="s-name">Your name</label><input type="text" id="s-name" name="name" maxlength="40" autocomplete="given-name"></div>
+    ${canHash ? `<div class="field"><label for="s-pw">Password (optional)</label><input type="password" id="s-pw" name="pw" autocomplete="new-password"><span class="hint">Asked each time you open the app. At least 4 characters.</span></div>
+    <div class="field"><label for="s-pw2">Repeat password</label><input type="password" id="s-pw2" name="pw2" autocomplete="new-password"></div>` : ''}
+    <p class="err" id="setup-err" role="alert" hidden></p>
+    <div class="btn-col"><button class="btn btn-primary block" type="submit" name="mode" value="empty">Start</button><button class="btn block" type="submit" name="mode" value="sample">Start with a sample family</button></div>
+    <p class="hint">This app tracks stock. It doesn’t give medical advice.</p></form></div>`;
+}
+function viewLock(){
+  return `<div class="gate"><form class="panel" id="lock-form" novalidate><span class="logo lg" aria-hidden="true"></span><h1>Welcome back${S.profile.name ? ', ' + esc(S.profile.name) : ''}</h1>
+    <div class="field"><label for="lock-pw">Password</label><input type="password" id="lock-pw" name="pw" autocomplete="current-password"></div>
+    <p class="err" id="lock-err" role="alert" hidden></p>
+    <button class="btn btn-primary block" type="submit">Unlock</button><button class="btn btn-ghost block" type="button" data-act="forgot">Forgot password</button></form></div>`;
+}
+function commit(){
+  housekeeping(); processDue(); const created = evaluateAlerts(); save(); created.forEach(notify); render();
+}
+function notify(a){
+  if (!S.settings.browserNotify || !('Notification' in window) || Notification.permission !== 'granted') return;
+  try { new Notification(a.title, {body:a.body, tag:a.id}); } catch(e){}
+}
+function toast(msg){
+  let el = document.getElementById('toast');
+  if (!el){ el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; el.setAttribute('role','status'); document.body.appendChild(el); }
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 2800);
+}
+function applyTheme(){
+  const t = S.settings.theme, r = document.documentElement;
+  if (t === 'system') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+}
+async function hashPw(pw, salt){
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:enc.encode(salt), iterations:150000, hash:'SHA-256'}, key, 256);
+  return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ---------- Modal ---------- */
+const dlg = document.getElementById('modal');
+let dlgHandler = null;
+function openModal(o){
+  dlg.className = o.wide ? 'wide' : '';
+  dlg.innerHTML = `<form id="dlg-form" novalidate><div class="dlg-head"><h2 id="dlg-title">${esc(o.title)}</h2><button type="button" class="icon-btn" data-act="close-modal" aria-label="Close">${I.close}</button></div>
+    <div class="dlg-body">${o.body}<p class="err" id="dlg-err" role="alert" hidden></p></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-act="close-modal">Cancel</button>${o.hideSubmit ? '' : `<button type="submit" class="btn ${o.danger ? 'btn-danger-solid' : 'btn-primary'}" id="dlg-submit">${esc(o.submit || 'Save')}</button>`}</div></form>`;
+  dlg.setAttribute('aria-labelledby','dlg-title');
+  dlgHandler = o.onSubmit;
+  if (!dlg.open){ dlg.showModal(); try { history.pushState({fmtModal:1}, ''); } catch(e){} }
+  const f = dlg.querySelector('form');
+  if (o.onMount) o.onMount(f);
+  const first = dlg.querySelector('.dlg-body input:not([type=hidden]):not([type=radio]):not([type=checkbox]), .dlg-body select, .dlg-body textarea');
+  if (first) first.focus();
+}
+let ignorePop = false, navAfter = null;
+function closeModal(fromPop){
+  if (!dlg.open) return;
+  dlg.close(); dlgHandler = null; dlg.innerHTML = '';
+  if (!fromPop && history.state && history.state.fmtModal){ ignorePop = true; history.back(); }
+}
+function go(h){ if (ignorePop) navAfter = h; else location.hash = h; }
+window.addEventListener('popstate', () => {
+  if (ignorePop){ ignorePop = false; if (navAfter){ const h = navAfter; navAfter = null; location.hash = h; } return; }
+  if (dlg.open) closeModal(true);
+});
+dlg.addEventListener('cancel', e => { e.preventDefault(); closeModal(); });
+function showErr(f, msg){ const el = f.querySelector('#dlg-err'); el.textContent = msg; el.hidden = false; }
+dlg.addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!dlgHandler) return;
+  const f = e.target;
+  f.querySelector('#dlg-err').hidden = true;
+  const r = await dlgHandler(f);
+  if (typeof r === 'string') showErr(f, r);
+  else if (r !== false) closeModal();
+});
+dlg.addEventListener('click', e => { if (e.target === dlg) closeModal(); });
+function confirmBox(title, text, okLabel, danger){
+  return new Promise(res => {
+    openModal({title, body:`<p>${text}</p>`, submit:okLabel, danger, onSubmit:() => { res(true); }});
+    dlg.addEventListener('close', () => res(false), {once:true});
+  });
+}
+
+/* ---------- Schedule form parts ---------- */
+function scheduleFields(pref){
+  const rec = (pref && pref.rec) || {type:'daily', days:[1,2,3,4,5,6,0], n:2};
+  const sl = {}; ((pref && pref.slots) || []).forEach(s => sl[s.slot] = s);
+  const rows = SLOT_ORDER.map(k => {
+    const s = sl[k], q = s ? s.qty : 0, t = s ? s.time : S.settings.slotTimes[k];
+    return `<span class="lbl">${SLOT_LABEL[k]}</span>
+      <input type="number" name="q_${k}" min="0" step="0.25" value="${q}" inputmode="decimal" aria-label="${SLOT_LABEL[k]} quantity">
+      <input type="time" name="t_${k}" value="${esc(t)}" aria-label="${SLOT_LABEL[k]} time">`;
+  }).join('');
+  const days = (rec.days && rec.days.length) ? rec.days : [1,2,3,4,5,6,0];
+  return `<div class="field full"><span class="lbl">How much at each time</span><p class="hint">Leave 0 for times it isn’t taken. Use 0.5 for half a tablet.</p>
+      <div class="slot-grid" style="margin-top:6px"><span></span><span class="hint">Quantity</span><span class="hint">Time</span>${rows}</div></div>
+    <div class="field"><label for="f-rtype">Repeat</label><select id="f-rtype" name="rtype">
+      <option value="daily"${rec.type==='daily'?' selected':''}>Every day</option>
+      <option value="weekdays"${rec.type==='weekdays'?' selected':''}>On certain days of the week</option>
+      <option value="everyN"${rec.type==='everyN'?' selected':''}>Every few days</option></select></div>
+    <div class="field" data-show="everyN"><label for="f-rn">Every how many days</label><input type="number" id="f-rn" name="rn" min="2" step="1" value="${rec.n || 2}"></div>
+    <fieldset class="field full" data-show="weekdays"><legend class="lbl">Days</legend><div class="days">${[1,2,3,4,5,6,0].map(d => `<label class="day"><input type="checkbox" name="wd" value="${d}"${days.includes(d)?' checked':''}><span>${DOW[d]}</span></label>`).join('')}</div></fieldset>`;
+}
+function wireRepeat(f){
+  const sel = f.elements.rtype;
+  const upd = () => f.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== sel.value; });
+  sel.addEventListener('change', upd); upd();
+}
+function readSchedule(f){
+  const slots = [];
+  for (const k of SLOT_ORDER){
+    const q = parseFloat(f.elements['q_' + k].value) || 0;
+    if (q < 0) return 'Quantities can’t be negative.';
+    const t = f.elements['t_' + k].value || S.settings.slotTimes[k];
+    if (q > 0) slots.push({slot:k, qty:round(q), time:t});
+  }
+  if (!slots.length) return 'Enter a quantity for at least one time of day.';
+  const type = f.elements.rtype.value, rec = {type};
+  if (type === 'weekdays'){ rec.days = [...f.querySelectorAll('input[name=wd]:checked')].map(x => +x.value); if (!rec.days.length) return 'Pick at least one day of the week.'; }
+  if (type === 'everyN'){ rec.n = parseInt(f.elements.rn.value, 10); if (!(rec.n >= 2)) return 'Enter 2 days or more.'; }
+  return {rec, slots};
+}
+function withNewVersion(vers, medId, from, rec, slots){
+  const out = vers.map(v => Object.assign({}, v));
+  for (const v of out){
+    if (v.to && v.to < v.from) continue;
+    if (v.from >= from) v.to = addDays(v.from, -1);
+    else if (!v.to || v.to >= from) v.to = addDays(from, -1);
+  }
+  const n = out.reduce((a,v) => Math.max(a, v.n), 0) + 1;
+  const nv = {id:uid(), m:medId, n, from, to:null, rec, slots, at:Date.now()};
+  out.push(nv);
+  return {out, nv};
+}
+function previewText(med, vers, stockQty){
+  const f = forecast(med, vers, stockQty, 0);
+  if (!f.hasFuture) return 'No doses fall on or after today with this schedule.';
+  const p = [`Average use is ${fmtQty(f.avgDaily, med.unit)} a day.`];
+  if (!f.last) p.push('There isn’t enough stock for the next dose.');
+  else if (f.runout){
+    p.push(`${fmtQty(stockQty, med.unit)} lasts until ${fmtDay(f.last.date)} and runs out on ${fmtDate(f.runout.date)}, ${coverText(f)} of cover.`);
+    if (f.cover <= lowDaysOf(med)) p.push('A refill alert will show straight away.');
+  } else p.push('Stock covers more than a year at this rate.');
+  return p.join(' ');
+}
+
+/* ---------- Members ---------- */
+function modalMember(id){
+  const m = id ? memberById(id) : null;
+  const pick = m ? m.color : COLORS[S.members.length % COLORS.length];
+  openModal({title:m ? 'Edit family member' : 'Add family member', submit:m ? 'Save changes' : 'Add member',
+    body:`<div class="form-grid"><div class="field full"><label for="f-name">Name</label><input type="text" id="f-name" name="name" value="${esc(m ? m.name : '')}" maxlength="40" placeholder="For example, Dad"></div>
+      <div class="field full"><label for="f-rel">Relation</label><select id="f-rel" name="relation">${RELATIONS.map(r => `<option${(m ? m.relation : 'Self') === r ? ' selected' : ''}>${r}</option>`).join('')}</select></div>
+      <fieldset class="field full"><legend class="lbl">Colour</legend><div class="swatches">${COLORS.map((c,i) => `<label class="sw"><input type="radio" name="color" value="${c}"${pick === c ? ' checked' : ''} aria-label="Colour ${i+1}"><span style="--c:${c}"></span></label>`).join('')}</div></fieldset></div>`,
+    onSubmit:f => {
+      const name = val(f,'name');
+      if (!name) return 'Enter a name.';
+      if (S.members.some(x => x.id !== id && !x.archived && x.name.toLowerCase() === name.toLowerCase())) return 'There’s already a family member with this name.';
+      const relation = val(f,'relation'), color = (f.querySelector('input[name=color]:checked') || {}).value || COLORS[0];
+      if (m){ Object.assign(m, {name, relation, color}); logE('member', null, `Updated ${name}’s profile`, {mem:m.id}); toast('Changes saved'); }
+      else { const nm = {id:uid(), name, relation, color, archived:false, createdAt:Date.now()}; S.members.push(nm); logE('member', null, `Added ${name}`, {mem:nm.id}); toast(`${name} added`); }
+      commit();
+    }});
+}
+
+/* ---------- Medicines ---------- */
+function createMedicine(d, opts){
+  const now = Date.now();
+  const back = opts && opts.backdate;
+  const trackFrom = back ? atTs(d.startDate, '00:00') : Math.max(now, atTs(d.startDate, '00:00'));
+  const med = {id:uid(), memberId:d.memberId, name:d.name, type:d.type, unit:d.unit, unitsPerPack:d.per || 0, category:d.category || '', notes:d.notes || '', prn:!!d.prn,
+    startDate:d.startDate, endDate:d.endDate || null, lowDays:d.lowDays, autoDeduct:d.autoDeduct !== false, status:'active', pauses:[], createdAt:back ? trackFrom : now, trackFrom};
+  S.medicines.push(med);
+  const at = back ? trackFrom : now;
+  if (d.qty > 0){
+    const type = d.stockMode === 'opening' ? 'opening' : 'purchase';
+    const note = type === 'purchase' && d.packs ? `${num(d.packs)} × ${num(d.per)}${d.loose ? ' + ' + num(d.loose) + ' loose' : ''}` : '';
+    S.txns.push({id:uid(), m:med.id, type, q:round(d.qty), at, note, exp:d.exp || null, on:d.startDate});
+    S.log.push({id:uid(), at, cat:'stock', m:med.id, mem:med.memberId, text:`${TXN_LABEL[type]}: ${fmtQty(d.qty, med.unit)}`});
+  }
+  if (!d.prn) S.schedules.push({id:uid(), m:med.id, n:1, from:d.startDate, to:null, rec:d.rec, slots:d.slots, at});
+  S.log.push({id:uid(), at:at - 1, cat:'medicine', m:med.id, mem:med.memberId, text:`Added ${med.name}` + (d.prn ? ', taken when needed' : `: ${slotsText(d.slots, med.unit)}, ${recText(d.rec).toLowerCase()}`)});
+  return med;
+}
+function modalMedNew(preset){
+  const mems = S.members.filter(m => !m.archived);
+  if (!mems.length){ toast('Add a family member first'); modalMember(); return; }
+  const cats = categories();
+  const body = `<div class="steps" aria-hidden="true"><span class="on"></span><span></span><span></span></div><p class="hint step-label" id="step-label">Step 1 of 3: the medicine</p>
+    <div data-step="1" class="form-grid">
+      <div class="field full"><label for="m-name">Medicine name</label><input type="text" id="m-name" name="name" maxlength="80" placeholder="For example, Vitamin D3 60,000 IU"></div>
+      <div class="field"><label for="m-mem">For</label><select id="m-mem" name="memberId">${mems.map(m => `<option value="${m.id}"${m.id === preset ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}</select></div>
+      <div class="field"><label for="m-type">Type</label><select id="m-type" name="type">${TYPES.map(t => `<option>${t}</option>`).join('')}</select></div>
+      <div class="field"><label for="m-unit">Counted in</label><input type="text" id="m-unit" name="unit" value="tablet" maxlength="20"><span class="hint">The unit you count stock in</span></div>
+      <div class="field"><label for="m-cat">Category (optional)</label><input type="text" id="m-cat" name="category" list="cat-list" maxlength="40" placeholder="For example, Blood pressure"><datalist id="cat-list">${cats.map(c => `<option value="${esc(c)}">`).join('')}</datalist></div>
+      <label class="check full"><input type="checkbox" name="prn"><span><b>Taken only when needed</b><br><span class="hint">Stock is tracked, but there’s no schedule and no run-out forecast.</span></span></label>
+      <div class="field full"><label for="m-notes">Notes or instructions (optional)</label><textarea id="m-notes" name="notes" maxlength="500" placeholder="For example, take after food"></textarea></div>
+    </div>
+    <div data-step="2" class="form-grid" hidden>
+      <fieldset class="field full"><legend class="lbl">Stock</legend>
+        <label class="check"><input type="radio" name="smode" value="purchase" checked><span>I’m adding packs I’ve just bought</span></label>
+        <label class="check"><input type="radio" name="smode" value="opening"><span>It’s already in use. I’ll enter what’s left</span></label></fieldset>
+      <div class="field"><label for="m-per" id="m-per-label">Tablets per strip</label><input type="number" id="m-per" name="per" min="0" step="any" inputmode="decimal" value="15"></div>
+      <div class="field" data-mode="purchase"><label for="m-packs" id="m-packs-label">Strips bought</label><input type="number" id="m-packs" name="packs" min="0" step="1" value="1"></div>
+      <div class="field" data-mode="purchase"><label for="m-loose">Extra loose quantity</label><input type="number" id="m-loose" name="loose" min="0" step="any" value="0"></div>
+      <div class="field" data-mode="opening"><label for="m-open">Quantity left right now</label><input type="number" id="m-open" name="openQty" min="0" step="any" inputmode="decimal"></div>
+      <div class="field"><label for="m-exp">Expiry date (optional)</label><input type="date" id="m-exp" name="exp"></div>
+      <p class="full total" id="m-total"></p>
+    </div>
+    <div data-step="3" class="form-grid" hidden>
+      <div class="field"><label for="m-start">Start date</label><input type="date" id="m-start" name="startDate" value="${today()}"></div>
+      <div class="field" data-sched><label for="m-end">End date (optional)</label><input type="date" id="m-end" name="endDate"></div>
+      <div class="full form-grid" data-sched style="gap:16px">${scheduleFields(null)}</div>
+      <div class="field" data-sched><label for="m-low">Refill alert when stock covers</label><div class="inline"><input type="number" id="m-low" name="lowDays" min="0" max="60" step="1" value="${S.settings.lowDays}"><span>days or less</span></div></div>
+      <label class="check full" data-sched><input type="checkbox" name="autoDeduct" checked><span><b>Deduct doses automatically</b><br><span class="hint">Stock goes down at each scheduled time. You can mark a dose as skipped afterwards.</span></span></label>
+      <p class="full hint" data-prnnote hidden>No schedule is needed. Use Record a dose on the medicine page whenever it’s taken.</p>
+      <div class="preview full" id="m-preview" aria-live="polite"></div>
+    </div>`;
+  let step = 1, unitTouched = false;
+  openModal({title:'Add medicine', submit:'Next', wide:true, body,
+    onMount:f => {
+      const foot = f.querySelector('.dlg-foot'), submit = f.querySelector('#dlg-submit');
+      const back = document.createElement('button'); back.type = 'button'; back.className = 'btn'; back.textContent = 'Back'; back.hidden = true;
+      foot.insertBefore(back, submit);
+      const labels = ['the medicine','stock','schedule'];
+      const qty = () => f.elements.smode.value === 'opening' ? (numVal(f,'openQty') || 0) : (numVal(f,'packs') || 0) * (numVal(f,'per') || 0) + (numVal(f,'loose') || 0);
+      const updType = () => {
+        const t = f.elements.type.value;
+        if (!unitTouched) f.elements.unit.value = UNIT_BY_TYPE[t];
+        f.querySelector('#m-per-label').textContent = PACK_LABEL[t];
+        f.querySelector('#m-packs-label').textContent = PACK_WORD[t] + ' bought';
+      };
+      const updMode = () => { const md = f.elements.smode.value; f.querySelectorAll('[data-mode]').forEach(el => { el.hidden = el.dataset.mode !== md; }); };
+      const updTotal = () => { f.querySelector('#m-total').textContent = `Total stock: ${fmtQty(qty(), val(f,'unit') || 'unit')}`; };
+      const updPrn = () => { const prn = f.elements.prn.checked; f.querySelectorAll('[data-sched]').forEach(el => { el.hidden = prn; }); f.querySelector('[data-prnnote]').hidden = !prn; };
+      const updPreview = () => {
+        const out = f.querySelector('#m-preview');
+        if (f.elements.prn.checked){ out.textContent = ''; return; }
+        const sch = readSchedule(f);
+        if (typeof sch === 'string'){ out.textContent = ''; return; }
+        const start = val(f,'startDate') || today();
+        const tmp = {id:'tmp', prn:false, status:'active', pauses:[], startDate:start, endDate:val(f,'endDate') || null, unit:val(f,'unit') || 'unit', lowDays:numVal(f,'lowDays') ?? S.settings.lowDays};
+        out.textContent = previewText(tmp, [{id:'v', from:start, to:null, rec:sch.rec, slots:sch.slots}], qty());
+      };
+      const show = () => {
+        f.querySelectorAll('[data-step]').forEach(el => { el.hidden = +el.dataset.step !== step; });
+        f.querySelectorAll('.steps span').forEach((el,i) => el.classList.toggle('on', i < step));
+        f.querySelector('#step-label').textContent = `Step ${step} of 3: ${labels[step-1]}`;
+        back.hidden = step === 1; submit.textContent = step === 3 ? 'Add medicine' : 'Next';
+        if (step === 2) updTotal();
+        if (step === 3){ updPrn(); updPreview(); }
+        const first = f.querySelector(`[data-step="${step}"] input:not([type=radio]):not([type=checkbox]):not([hidden]), [data-step="${step}"] select`);
+        first && first.focus();
+      };
+      back.addEventListener('click', () => { step--; f.querySelector('#dlg-err').hidden = true; show(); });
+      f.elements.type.addEventListener('change', () => { updType(); });
+      f.elements.unit.addEventListener('input', () => { unitTouched = true; });
+      f.querySelectorAll('input[name=smode]').forEach(r => r.addEventListener('change', () => { updMode(); updTotal(); }));
+      f.addEventListener('input', () => { if (step === 2) updTotal(); if (step === 3) updPreview(); });
+      f.addEventListener('change', () => { if (step === 3) updPreview(); });
+      wireRepeat(f); updType(); updMode();
+      f._step = () => step; f._next = () => { step++; show(); }; f._qty = qty;
+    },
+    onSubmit:f => {
+      const step = f._step();
+      if (step === 1){
+        if (!val(f,'name')) return 'Enter the medicine name.';
+        if (!val(f,'unit')) return 'Enter the unit you count it in, such as tablet or ml.';
+        f._next(); return false;
+      }
+      if (step === 2){
+        const per = numVal(f,'per'); const q = f._qty();
+        if (per != null && per < 0) return 'Pack size can’t be negative.';
+        if (f.elements.smode.value === 'purchase' && !(q > 0)) return 'Enter how much you bought.';
+        if (f.elements.smode.value === 'opening' && numVal(f,'openQty') == null) return 'Enter how much is left right now, even if it’s 0.';
+        if (q < 0) return 'Stock can’t be negative.';
+        f._next(); return false;
+      }
+      const prn = f.elements.prn.checked;
+      const startDate = val(f,'startDate');
+      if (!startDate) return 'Enter a start date.';
+      const endDate = prn ? '' : val(f,'endDate');
+      if (endDate && endDate < startDate) return 'The end date is before the start date.';
+      let sch = {rec:null, slots:[]};
+      if (!prn){ sch = readSchedule(f); if (typeof sch === 'string') return sch; }
+      const lowDays = numVal(f,'lowDays');
+      const med = createMedicine({memberId:val(f,'memberId'), name:val(f,'name'), type:val(f,'type'), unit:val(f,'unit').toLowerCase(), per:numVal(f,'per') || 0, category:val(f,'category'), notes:val(f,'notes'), prn,
+        startDate, endDate, lowDays:lowDays == null ? S.settings.lowDays : Math.max(0, Math.round(lowDays)), autoDeduct:prn ? true : f.elements.autoDeduct.checked,
+        qty:f._qty(), stockMode:f.elements.smode.value, packs:numVal(f,'packs') || 0, loose:numVal(f,'loose') || 0, exp:val(f,'exp') || null, rec:sch.rec, slots:sch.slots});
+      closeModal(); commit(); toast(`${med.name} added`);
+      go('#medicine-' + med.id);
+      return false;
+    }});
+}
+function modalMedEdit(id){
+  const m = medById(id); if (!m) return;
+  const mems = S.members.filter(x => !x.archived || x.id === m.memberId);
+  openModal({title:'Edit medicine details', submit:'Save changes', wide:true,
+    body:`<div class="form-grid">
+      <div class="field full"><label for="e-name">Medicine name</label><input type="text" id="e-name" name="name" maxlength="80" value="${esc(m.name)}"></div>
+      <div class="field"><label for="e-mem">For</label><select id="e-mem" name="memberId">${mems.map(x => `<option value="${x.id}"${x.id === m.memberId ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>
+      <div class="field"><label for="e-cat">Category</label><input type="text" id="e-cat" name="category" maxlength="40" list="cat-list2" value="${esc(m.category)}"><datalist id="cat-list2">${categories().map(c => `<option value="${esc(c)}">`).join('')}</datalist></div>
+      <div class="field"><label for="e-per">${esc(PACK_LABEL[m.type] || 'Units per pack')}</label><input type="number" id="e-per" name="per" min="0" step="any" value="${m.unitsPerPack || 0}"></div>
+      ${m.prn ? '' : `<div class="field"><label for="e-end">End date (optional)</label><input type="date" id="e-end" name="endDate" value="${esc(m.endDate || '')}" min="${esc(m.startDate)}"></div>
+      <div class="field"><label for="e-low">Refill alert when stock covers</label><div class="inline"><input type="number" id="e-low" name="lowDays" min="0" max="60" step="1" value="${lowDaysOf(m)}"><span>days or less</span></div></div>
+      <label class="check full"><input type="checkbox" name="autoDeduct"${m.autoDeduct ? ' checked' : ''}><span><b>Deduct doses automatically</b><br><span class="hint">When off, you confirm each dose as taken or skipped. Applies to doses from now on.</span></span></label>`}
+      <div class="field full"><label for="e-notes">Notes or instructions</label><textarea id="e-notes" name="notes" maxlength="500">${esc(m.notes)}</textarea></div>
+      <p class="hint full">The type (${esc(m.type)}) and counting unit (${esc(m.unit)}) can’t be changed once stock is recorded.</p></div>`,
+    onSubmit:f => {
+      const name = val(f,'name'); if (!name) return 'Enter the medicine name.';
+      const endDate = m.prn ? null : (val(f,'endDate') || null);
+      if (endDate && endDate < m.startDate) return 'The end date is before the start date.';
+      const changes = [];
+      const set = (k, v, label) => { if ((m[k] ?? '') !== (v ?? '')){ changes.push(label); m[k] = v; } };
+      set('name', name, 'name'); set('memberId', val(f,'memberId'), 'person'); set('category', val(f,'category'), 'category');
+      set('unitsPerPack', numVal(f,'per') || 0, 'pack size'); set('notes', val(f,'notes'), 'notes');
+      if (!m.prn){
+        set('endDate', endDate, 'end date');
+        const low = numVal(f,'lowDays'); set('lowDays', low == null ? S.settings.lowDays : Math.max(0, Math.round(low)), 'alert level');
+        set('autoDeduct', f.elements.autoDeduct.checked, 'automatic deduction');
+      }
+      if (changes.length) logE('medicine', m, `Edited ${changes.join(', ')}`);
+      commit(); toast('Changes saved');
+    }});
+}
+function modalSchedule(id){
+  const m = medById(id); if (!m) return;
+  const vers = versionsOf(m.id), cur = currentVersion(m, vers);
+  const minFrom = m.startDate > today() ? m.startDate : today();
+  openModal({title:'Change dose or schedule', submit:'Save new schedule', wide:true,
+    body:`<p class="muted" style="margin-bottom:16px">Current: ${esc(cur ? slotsText(cur.slots, m.unit) + ', ' + recText(cur.rec).toLowerCase() : 'none')}. Earlier doses and stock history stay exactly as they are.</p>
+      <div class="form-grid"><div class="field"><label for="sc-from">New schedule starts</label><input type="date" id="sc-from" name="from" value="${minFrom}" min="${minFrom}"></div><span></span>
+      ${scheduleFields(cur)}<div class="preview full" id="sc-preview" aria-live="polite"></div></div>`,
+    onMount:f => {
+      wireRepeat(f);
+      const upd = () => {
+        const sch = readSchedule(f), from = val(f,'from');
+        const out = f.querySelector('#sc-preview');
+        if (typeof sch === 'string' || !from){ out.textContent = ''; return; }
+        const {out: nv} = withNewVersion(vers, m.id, from, sch.rec, sch.slots);
+        out.textContent = previewText(m, nv.sort((a,b) => a.from < b.from ? -1 : a.from > b.from ? 1 : a.n - b.n), C.fc[m.id].projected);
+      };
+      f.addEventListener('input', upd); f.addEventListener('change', upd); upd();
+    },
+    onSubmit:f => {
+      const from = val(f,'from');
+      if (!from || from < minFrom) return `The new schedule can start ${fmtDate(minFrom)} or later.`;
+      const sch = readSchedule(f); if (typeof sch === 'string') return sch;
+      const {out} = withNewVersion(vers, m.id, from, sch.rec, sch.slots);
+      S.schedules = S.schedules.filter(v => v.m !== m.id).concat(out);
+      logE('medicine', m, `Schedule changed from ${fmtDate(from)}: ${slotsText(sch.slots, m.unit)}, ${recText(sch.rec).toLowerCase()}`);
+      commit(); toast('New schedule saved');
+    }});
+}
+function modalPurchase(id){
+  const m = medById(id); if (!m) return;
+  openModal({title:`Record purchase: ${m.name}`, submit:'Record purchase',
+    body:`<div class="form-grid">
+      <div class="field"><label for="p-packs">${esc(PACK_WORD[m.type] || 'Packs')} bought</label><input type="number" id="p-packs" name="packs" min="0" step="1" value="1"></div>
+      <div class="field"><label for="p-per">${esc(PACK_LABEL[m.type] || 'Units per pack')}</label><input type="number" id="p-per" name="per" min="0" step="any" value="${m.unitsPerPack || ''}"></div>
+      <div class="field"><label for="p-loose">Extra loose quantity</label><input type="number" id="p-loose" name="loose" min="0" step="any" value="0"></div>
+      <div class="field"><label for="p-exp">Expiry date</label><input type="date" id="p-exp" name="exp"></div>
+      <p class="full total" id="p-total"></p></div>`,
+    onMount:f => {
+      const upd = () => { const q = (numVal(f,'packs') || 0) * (numVal(f,'per') || 0) + (numVal(f,'loose') || 0); f.querySelector('#p-total').textContent = `Adds ${fmtQty(q, m.unit)}. New expected stock: ${fmtQty(round(C.fc[m.id].stock + q), m.unit)}.`; };
+      f.addEventListener('input', upd); upd();
+    },
+    onSubmit:f => {
+      const packs = numVal(f,'packs') || 0, per = numVal(f,'per') || 0, loose = numVal(f,'loose') || 0;
+      if (packs < 0 || per < 0 || loose < 0) return 'Quantities can’t be negative.';
+      const q = round(packs * per + loose);
+      if (!(q > 0)) return 'Enter how much you bought.';
+      if (per && per !== m.unitsPerPack) m.unitsPerPack = per;
+      addTxn(m, 'purchase', q, `${num(packs)} × ${num(per)}${loose ? ' + ' + num(loose) + ' loose' : ''}`, {exp:val(f,'exp') || null, on:today()});
+      logE('stock', m, `Purchase: ${fmtQty(q, m.unit)}${val(f,'exp') ? ', expires ' + fmtDate(val(f,'exp')) : ''}`);
+      commit(); toast('Purchase recorded');
+    }});
+}
+function modalCount(id){
+  const m = medById(id); if (!m) return;
+  const f0 = C.fc[m.id], expected = f0.stock, avg = avgDoseQty(m);
+  openModal({title:`Count & reconcile: ${m.name}`, submit:'Save count',
+    body:`<p class="muted small">Expected stock</p><p class="big-num" style="margin-bottom:16px">${esc(fmtQty(expected, m.unit))}</p>
+      ${f0.pending > 0 ? `<p class="warnbar">${esc(fmtQty(f0.pending, m.unit))} in doses aren’t confirmed yet. Confirm them first for an accurate comparison.</p>` : ''}
+      <div class="form-grid"><div class="field"><label for="c-qty">How many did you count?</label><input type="number" id="c-qty" name="counted" min="0" step="any" inputmode="decimal"></div><span></span>
+      <div class="field full" data-neg hidden><label for="c-reason">What happened to the difference?</label><select id="c-reason" name="reason"><option value="">Choose a reason</option><option>Wastage or spillage</option><option>Extra doses taken</option><option>Lost</option><option>Given to someone else</option><option>Counting mistake earlier</option><option>Other</option></select></div>
+      <p class="full variance" id="c-var" aria-live="polite" hidden></p></div>`,
+    onMount:f => {
+      const upd = () => {
+        const c = numVal(f,'counted'), out = f.querySelector('#c-var'), neg = f.querySelector('[data-neg]');
+        if (c == null){ out.hidden = true; neg.hidden = true; return; }
+        const v = round(c - expected);
+        out.hidden = false; neg.hidden = v >= 0;
+        out.className = 'full variance ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero');
+        if (v > 0) out.textContent = m.prn ? `${fmtQty(v, m.unit)} more than expected. Stock will be corrected to ${fmtQty(c, m.unit)}.` : `${fmtQty(v, m.unit)} more than expected. This records about ${num(round(v/avg))} missed ${round(v/avg) === 1 ? 'dose' : 'doses'} and corrects stock to ${fmtQty(c, m.unit)}.`;
+        else if (v < 0) out.textContent = `${fmtQty(-v, m.unit)} fewer than expected. Stock will be corrected to ${fmtQty(c, m.unit)}.`;
+        else out.textContent = 'Matches expected stock. Doses look on track.';
+      };
+      f.addEventListener('input', upd); f.addEventListener('change', upd);
+    },
+    onSubmit:f => {
+      const c = numVal(f,'counted');
+      if (c == null) return 'Enter the quantity you counted.';
+      if (c < 0) return 'The count can’t be negative.';
+      const v = round(c - expected);
+      const reason = val(f,'reason');
+      if (v < 0 && !reason) return 'Choose what happened to the difference.';
+      const missed = v > 0 && !m.prn ? round(v / avg) : 0;
+      if (v !== 0) addTxn(m, 'count', v, v > 0 ? (m.prn ? 'Found more than expected' : `About ${num(missed)} missed doses`) : reason);
+      S.counts.push({id:uid(), m:m.id, at:Date.now(), expected, counted:round(c), variance:v, missed, reason:v < 0 ? reason : ''});
+      logE('stock', m, v === 0 ? `Counted ${fmtQty(c, m.unit)}, matches expected` : v > 0 ? `Counted ${fmtQty(c, m.unit)}, expected ${num(expected)}: ${num(v)} more${m.prn ? '' : `, about ${num(missed)} missed doses`}` : `Counted ${fmtQty(c, m.unit)}, expected ${num(expected)}: ${num(-v)} fewer (${reason})`);
+      commit(); toast('Count saved');
+    }});
+}
+function modalAdjust(id){
+  const m = medById(id); if (!m) return;
+  const stock = C.fc[m.id].stock;
+  openModal({title:`Adjust stock: ${m.name}`, submit:'Save adjustment',
+    body:`<p class="muted" style="margin-bottom:14px">Expected stock is ${esc(fmtQty(stock, m.unit))}. Use this for wastage, expired stock or corrections. To check doses were taken, use Count now instead.</p>
+      <div class="form-grid"><fieldset class="field full"><legend class="lbl">Change</legend><label class="check"><input type="radio" name="dir" value="-1" checked><span>Remove stock</span></label><label class="check"><input type="radio" name="dir" value="1"><span>Add stock</span></label></fieldset>
+      <div class="field"><label for="a-qty">Quantity (${esc(m.unit)})</label><input type="number" id="a-qty" name="qty" min="0" step="any" inputmode="decimal"></div>
+      <div class="field"><label for="a-reason">Reason</label><select id="a-reason" name="reason"><option value="">Choose a reason</option><option>Wastage or spillage</option><option>Expired</option><option>Lost</option><option>Given to someone else</option><option>Received from someone</option><option>Correction</option><option>Other</option></select></div>
+      <div class="field full"><label for="a-note">Note (optional)</label><input type="text" id="a-note" name="note" maxlength="140"></div></div>`,
+    onSubmit:f => {
+      const q = numVal(f,'qty'), dir = +f.querySelector('input[name=dir]:checked').value, reason = val(f,'reason');
+      if (!(q > 0)) return 'Enter a quantity above 0.';
+      if (!reason) return 'Choose a reason.';
+      if (dir < 0 && q > stock + 1e-9) return `You can remove at most ${fmtQty(stock, m.unit)}.`;
+      addTxn(m, 'adjust', dir * q, reason + (val(f,'note') ? ': ' + val(f,'note') : ''));
+      logE('stock', m, `${dir < 0 ? 'Removed' : 'Added'} ${fmtQty(q, m.unit)} (${reason})`);
+      commit(); toast('Stock adjusted');
+    }});
+}
+function modalPrnDose(id){
+  const m = medById(id); if (!m) return;
+  const stock = C.fc[m.id].stock;
+  openModal({title:`Record a dose: ${m.name}`, submit:'Record dose',
+    body:`<div class="form-grid"><div class="field"><label for="d-qty">Quantity (${esc(m.unit)})</label><input type="number" id="d-qty" name="qty" min="0" step="any" value="1"></div></div><p class="hint" style="margin-top:10px">${esc(fmtQty(stock, m.unit))} in stock.</p>`,
+    onSubmit:f => {
+      const q = numVal(f,'qty');
+      if (!(q > 0)) return 'Enter a quantity above 0.';
+      if (q > stock + 1e-9) return `Only ${fmtQty(stock, m.unit)} is in stock. Record a purchase or count first.`;
+      addTxn(m, 'taken', -q, 'Taken when needed');
+      logE('dose', m, `Dose recorded: ${fmtQty(q, m.unit)}`);
+      commit(); toast('Dose recorded');
+    }});
+}
+function modalPause(id){
+  const m = medById(id); if (!m) return;
+  openModal({title:`Pause ${m.name}`, submit:'Pause medicine',
+    body:`<p class="muted" style="margin-bottom:14px">No doses are deducted while it’s paused, for example during a hospital stay or travel. Stock stays as it is.</p>
+      <div class="form-grid"><div class="field"><label for="pa-res">Resume on (optional)</label><input type="date" id="pa-res" name="resume" min="${addDays(today(),1)}"><span class="hint">Leave empty to resume yourself.</span></div>
+      <div class="field"><label for="pa-note">Reason (optional)</label><input type="text" id="pa-note" name="note" maxlength="100"></div></div>`,
+    onSubmit:f => {
+      const res = val(f,'resume');
+      if (res && res <= today()) return 'Pick a resume date after today.';
+      m.status = 'paused'; m.pauses = m.pauses || [];
+      m.pauses.push({from:today(), to:res ? addDays(res, -1) : null, note:val(f,'note')});
+      logE('medicine', m, `Paused ${m.name}${res ? ' until ' + fmtDate(res) : ''}${val(f,'note') ? ' (' + val(f,'note') + ')' : ''}`);
+      commit(); toast('Medicine paused');
+    }});
+}
+function doResume(id){
+  const m = medById(id); if (!m) return;
+  const p = (m.pauses || [])[m.pauses.length - 1];
+  if (p) p.to = addDays(today(), -1);
+  m.status = 'active'; m.doneUntil = Date.now();
+  logE('medicine', m, `Resumed ${m.name}`);
+  commit(); toast('Medicine resumed');
+}
+function modalDiscontinue(id){
+  const m = medById(id); if (!m) return;
+  const stock = C.fc[m.id].stock;
+  openModal({title:`Discontinue ${m.name}`, submit:'Discontinue', danger:true,
+    body:`<p class="muted" style="margin-bottom:14px">No further doses are deducted. Its history stays in the app.</p>
+      <div class="form-grid"><div class="field full"><label for="dc-reason">Reason</label><select id="dc-reason" name="reason"><option value="">Choose a reason</option><option>Course completed</option><option>Doctor stopped it</option><option>Switched to another medicine</option><option>Side effects</option><option>Other</option></select></div>
+      ${stock > 0 ? `<fieldset class="field full"><legend class="lbl">${esc(fmtQty(stock, m.unit))} left in stock</legend><label class="check"><input type="radio" name="left" value="keep" checked><span>Keep it on record</span></label><label class="check"><input type="radio" name="left" value="writeoff"><span>Write it off, it’s been thrown away</span></label></fieldset>` : ''}</div>`,
+    onSubmit:f => {
+      const reason = val(f,'reason'); if (!reason) return 'Choose a reason.';
+      m.status = 'discontinued'; m.discontinuedOn = today(); m.discontinueReason = reason;
+      const left = f.querySelector('input[name=left]:checked');
+      if (left && left.value === 'writeoff' && stock > 0) addTxn(m, 'writeoff', -stock, 'Thrown away on discontinuation');
+      logE('medicine', m, `Discontinued ${m.name} (${reason})`);
+      commit(); toast('Medicine discontinued');
+    }});
+}
+
+/* ---------- Doses ---------- */
+function skipDose(key){
+  const d = S.doses[key]; if (!d) return;
+  const m = medById(d.m); if (!m) return;
+  if (d.st === 'auto' || d.st === 'short' || d.st === 'taken'){
+    if (d.ded > 0){ addTxn(m, 'skip', d.ded, `${fmtDay(d.d)}, ${slotName(d).toLowerCase()}`, {dose:key}); d.rest = d.ded; }
+    d.prev = d.st; d.st = 'skipped';
+  } else if (d.st === 'pending'){ d.prev = 'pending'; d.st = 'skipped'; d.rest = 0; }
+  else return;
+  logE('dose', m, `Marked ${fmtDay(d.d)}, ${slotName(d).toLowerCase()} as skipped`);
+  commit(); toast('Dose marked as skipped');
+}
+function undoSkip(key){
+  const d = S.doses[key]; if (!d || d.st !== 'skipped') return;
+  const m = medById(d.m); if (!m) return;
+  if (d.rest > 0){
+    const have = Math.max(0, stockOf(m.id));
+    const back = round(Math.min(d.rest, have));
+    if (back > 0) addTxn(m, 'unskip', -back, `${fmtDay(d.d)}, ${slotName(d).toLowerCase()}`, {dose:key});
+    d.rest = 0;
+  }
+  d.st = d.prev || 'auto';
+  logE('dose', m, `Undid skip for ${fmtDay(d.d)}, ${slotName(d).toLowerCase()}`);
+  commit(); toast('Skip undone');
+}
+function takeDose(key){
+  const d = S.doses[key]; if (!d || d.st !== 'pending') return;
+  const m = medById(d.m); if (!m) return;
+  const have = Math.max(0, stockOf(m.id));
+  d.ded = round(Math.min(d.q, have)); d.st = d.ded + 1e-9 < d.q ? 'short' : 'taken';
+  logE('dose', m, `Confirmed ${fmtDay(d.d)}, ${slotName(d).toLowerCase()} as taken`);
+  commit(); toast('Dose confirmed');
+}
+
+/* ---------- Password, data ---------- */
+function modalPassword(){
+  const has = !!S.profile.auth;
+  openModal({title:has ? 'Change password' : 'Set a password', submit:'Save password',
+    body:`<div class="form-grid">${has ? `<div class="field full"><label for="pw-cur">Current password</label><input type="password" id="pw-cur" name="cur" autocomplete="current-password"></div>` : ''}
+      <div class="field"><label for="pw-new">New password</label><input type="password" id="pw-new" name="pw" autocomplete="new-password"></div>
+      <div class="field"><label for="pw-new2">Repeat new password</label><input type="password" id="pw-new2" name="pw2" autocomplete="new-password"></div>
+      <p class="hint full">This keeps other people using this device out of the app. If you forget it, the only way in is to erase this device’s data.</p></div>`,
+    onSubmit:async f => {
+      if (has){ const h = await hashPw(f.elements.cur.value, S.profile.auth.salt); if (h !== S.profile.auth.hash) return 'The current password is wrong.'; }
+      const pw = f.elements.pw.value;
+      if (pw.length < 4) return 'Use at least 4 characters.';
+      if (pw !== f.elements.pw2.value) return 'The two passwords don’t match.';
+      const salt = uid() + uid();
+      S.profile.auth = {salt, hash:await hashPw(pw, salt)};
+      save(); render(); toast('Password saved');
+    }});
+}
+function modalRemovePassword(){
+  openModal({title:'Remove password', submit:'Remove password', danger:true,
+    body:`<div class="field"><label for="rp-cur">Current password</label><input type="password" id="rp-cur" name="cur" autocomplete="current-password"></div>`,
+    onSubmit:async f => {
+      const h = await hashPw(f.elements.cur.value, S.profile.auth.salt);
+      if (h !== S.profile.auth.hash) return 'The password is wrong.';
+      S.profile.auth = null; save(); render(); toast('Password removed');
+    }});
+}
+function download(name, text, type){
+  const blob = new Blob([text], {type}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function exportCsv(){
+  const rows = filteredHistory();
+  const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
+  const lines = [['When','Person','Medicine','Type','Details'].map(q).join(',')];
+  for (const e of rows){ const mem = memberById(e.mem), med = medById(e.m); const d = new Date(e.at);
+    lines.push([`${dstr(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`, mem ? mem.name : '', med ? med.name : '', CAT_LABEL[e.cat] || e.cat, e.text].map(q).join(',')); }
+  download(`medicine-history-${today()}.csv`, lines.join('\r\n'), 'text/csv');
+}
+function loadSample(){
+  const now = Date.now();
+  const mk = (name, relation, ci) => { const m = {id:uid(), name, relation, color:COLORS[ci], archived:false, createdAt:now}; S.members.push(m); return m; };
+  const mom = mk('Mom','Mom',2), dad = mk('Dad','Dad',0), bro = mk('Rohan','Brother',1);
+  const ago = n => addDays(today(), -n);
+  const add = o => createMedicine({memberId:o.mem.id, name:o.name, type:o.type, unit:UNIT_BY_TYPE[o.type], per:o.per, category:o.cat, notes:o.notes || '', prn:!!o.prn,
+    startDate:ago(o.daysAgo), endDate:null, lowDays:S.settings.lowDays, autoDeduct:true, qty:o.qty, stockMode:'purchase', packs:o.qty / o.per, loose:0,
+    exp:addDays(today(), o.expIn), rec:o.rec || {type:'daily'}, slots:o.slots || []}, {backdate:true});
+  add({mem:bro, name:'Vitamin B12 1500 mcg', type:'Tablet', per:15, qty:15, cat:'Vitamins', daysAgo:12, expIn:400, slots:[{slot:'morning', qty:1, time:'08:00'}]});
+  add({mem:dad, name:'Metformin 500 mg', type:'Tablet', per:10, qty:30, cat:'Diabetes', daysAgo:9, expIn:500, notes:'After breakfast and after dinner.', slots:[{slot:'morning', qty:1, time:'08:00'}, {slot:'night', qty:1, time:'21:00'}]});
+  add({mem:dad, name:'Vitamin D3 60,000 IU', type:'Capsule', per:4, qty:4, cat:'Vitamins', daysAgo:15, expIn:300, rec:{type:'weekdays', days:[0]}, slots:[{slot:'morning', qty:1, time:'09:00'}]});
+  add({mem:mom, name:'Levothyroxine 50 mcg', type:'Tablet', per:100, qty:100, cat:'Thyroid', daysAgo:20, expIn:350, notes:'Empty stomach, 30 minutes before breakfast.', slots:[{slot:'morning', qty:1, time:'07:00'}]});
+  add({mem:mom, name:'Telmisartan 40 mg', type:'Tablet', per:15, qty:30, cat:'Blood pressure', daysAgo:4, expIn:21, slots:[{slot:'morning', qty:1, time:'08:00'}]});
+  add({mem:mom, name:'Paracetamol 500 mg', type:'Tablet', per:10, qty:10, cat:'Pain relief', daysAgo:10, expIn:600, prn:true, notes:'Only when needed for fever or pain.'});
+  logE('member', null, 'Loaded the sample family');
+}
+
+/* ---------- Events ---------- */
+const ACT = {
+  'close-modal': () => closeModal(),
+  'add-member': () => modalMember(),
+  'edit-member': d => modalMember(d.id),
+  'archive-member': d => {
+    const m = memberById(d.id); if (!m) return;
+    const live = S.medicines.filter(x => x.memberId === m.id && x.status !== 'discontinued');
+    if (live.length){ toast(`Discontinue ${m.name}’s current medicines first`); return; }
+    confirmBox(`Archive ${m.name}?`, 'Their history is kept and you can restore them later from the Family page.', 'Archive').then(ok => { if (!ok) return; m.archived = true; logE('member', null, `Archived ${m.name}`, {mem:m.id}); closeModal(); commit(); go('#family'); });
+  },
+  'unarchive-member': d => { const m = memberById(d.id); if (!m) return; m.archived = false; logE('member', null, `Restored ${m.name}`, {mem:m.id}); commit(); },
+  'delete-member': d => {
+    const m = memberById(d.id); if (!m) return;
+    confirmBox(`Delete ${m.name}?`, 'They have no medicines, so nothing else is removed.', 'Delete', true).then(ok => { if (!ok) return; S.members = S.members.filter(x => x.id !== m.id); logE('member', null, `Deleted ${m.name}`); closeModal(); commit(); go('#family'); });
+  },
+  'add-med': d => modalMedNew(d.id || (parseRoute().name === 'member' ? parseRoute().id : U.dashMember || '')),
+  'edit-med': d => modalMedEdit(d.id),
+  'delete-med': d => {
+    const m = medById(d.id); if (!m) return;
+    confirmBox(`Delete ${m.name}?`, 'This removes the medicine and all of its doses, stock entries and counts. This can’t be undone.', 'Delete medicine', true).then(ok => {
+      if (!ok) return;
+      const id = m.id;
+      S.medicines = S.medicines.filter(x => x.id !== id); S.schedules = S.schedules.filter(x => x.m !== id); S.txns = S.txns.filter(x => x.m !== id);
+      S.counts = S.counts.filter(x => x.m !== id); S.alerts = S.alerts.filter(x => x.m !== id); delete S.cycles[id];
+      for (const k in S.doses) if (S.doses[k].m === id) delete S.doses[k];
+      S.log.forEach(l => { if (l.m === id) l.m = null; });
+      S.log.push({id:uid(), at:Date.now(), cat:'medicine', m:null, mem:m.memberId, text:`Deleted ${m.name}`});
+      closeModal(); commit(); go('#medicines');
+    });
+  },
+  'count': d => modalCount(d.id),
+  'purchase': d => modalPurchase(d.id),
+  'adjust': d => modalAdjust(d.id),
+  'schedule': d => modalSchedule(d.id),
+  'pause': d => modalPause(d.id),
+  'resume': d => doResume(d.id),
+  'discontinue': d => modalDiscontinue(d.id),
+  'prn-dose': d => modalPrnDose(d.id),
+  'skip': d => skipDose(d.key),
+  'undo-skip': d => undoSkip(d.key),
+  'take': d => takeDose(d.key),
+  'go-family': () => { location.hash = '#family'; },
+  'install': () => { if (!deferredInstall) { toast(installHow().text); return; } deferredInstall.prompt(); deferredInstall.userChoice.finally(() => { deferredInstall = null; render(); }); },
+  'dismiss-install': () => { S.settings.installDismissed = true; save(); render(); },
+  'go-meds': d => { U.medStatus = d.status || ''; U.medMember = U.dashMember; U.medCat = U.dashCat; U.medQ = ''; if (location.hash === '#medicines') render(); else location.hash = '#medicines'; },
+  'member-tab': d => { U.memberTab = d.tab; render(); },
+  'hist-more': () => { U.hLimit += 150; render(); },
+  'export-csv': () => exportCsv(),
+  'set-password': () => modalPassword(),
+  'remove-password': () => modalRemovePassword(),
+  'lock': () => { unlocked = false; render(); },
+  'backup': () => { download(`family-medicines-backup-${today()}.json`, JSON.stringify(S, null, 1), 'application/json'); S.lastBackup = Date.now(); save(); toast('Backup downloaded'); },
+  'restore': () => document.getElementById('restore-file').click(),
+  'sample': () => { loadSample(); commit(); toast('Sample family loaded'); go('#today'); },
+  'erase': () => confirmBox('Erase all data?', 'This deletes every family member, medicine and history entry from this browser. Download a backup first if you might need it.', 'Erase everything', true).then(ok => {
+    if (!ok) return; try { localStorage.removeItem(KEY); } catch(e){} S = freshState(); unlocked = false; closeModal(); go('#today'); document.getElementById('root').innerHTML = ''; render();
+  }),
+  'forgot': () => confirmBox('Erase this device’s data?', 'Without the password the app can’t be opened. Erasing removes all data saved in this browser so you can start again. If you have a backup file, you can restore it afterwards.', 'Erase and start again', true).then(ok => {
+    if (!ok) return; try { localStorage.removeItem(KEY); } catch(e){} S = freshState(); closeModal(); render();
+  })
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const fn = ACT[el.dataset.act];
+  if (fn){ e.preventDefault(); fn(el.dataset, el); }
+});
+function onFilter(e){
+  const el = e.target.closest('[data-filter]'); if (!el) return;
+  const k = el.dataset.filter; U[k] = el.value;
+  if (k === 'hMem') U.hMed = '';
+  if (k.startsWith('h')) U.hLimit = 150;
+  render();
+}
+document.addEventListener('input', e => { if (e.target.matches('input[data-filter]')) onFilter(e); });
+document.addEventListener('change', e => { if (e.target.matches('select[data-filter]')) onFilter(e); });
+document.addEventListener('submit', async e => {
+  const f = e.target;
+  if (f.id === 'dlg-form') return;
+  e.preventDefault();
+  if (f.id === 'setup-form'){
+    const err = f.querySelector('#setup-err'); err.hidden = true;
+    const pw = f.elements.pw ? f.elements.pw.value : '';
+    if (pw){
+      if (pw.length < 4){ err.textContent = 'Use at least 4 characters for the password, or leave it empty.'; err.hidden = false; return; }
+      if (pw !== f.elements.pw2.value){ err.textContent = 'The two passwords don’t match.'; err.hidden = false; return; }
+    }
+    let auth = null;
+    if (pw){ const salt = uid() + uid(); auth = {salt, hash:await hashPw(pw, salt)}; }
+    S.profile = {name:val(f,'name'), auth, createdAt:Date.now()};
+    unlocked = true;
+    if (e.submitter && e.submitter.value === 'sample') loadSample();
+    document.getElementById('root').innerHTML = '';
+    commit();
+  } else if (f.id === 'lock-form'){
+    const err = f.querySelector('#lock-err');
+    const h = await hashPw(f.elements.pw.value, S.profile.auth.salt);
+    if (h === S.profile.auth.hash){ unlocked = true; document.getElementById('root').innerHTML = ''; commit(); }
+    else { err.textContent = 'That password isn’t right.'; err.hidden = false; f.elements.pw.select(); }
+  } else if (f.id === 'settings-form'){
+    const s = S.settings;
+    const ints = {lowDays:[0,60], amberDays:[1,90], expiryDays:[0,365]};
+    for (const k in ints){ const v = numVal(f, k); if (v == null || v < ints[k][0] || v > ints[k][1]){ toast('Check the numbers in Alerts'); return; } }
+    S.profile.name = val(f,'name');
+    for (const k of SLOT_ORDER){ const t = val(f, 't_' + k); if (t) s.slotTimes[k] = t; }
+    s.lowDays = Math.round(numVal(f,'lowDays')); s.amberDays = Math.round(numVal(f,'amberDays')); s.expiryDays = Math.round(numVal(f,'expiryDays'));
+    s.theme = val(f,'theme'); s.skipCountsMissed = f.elements.skipCountsMissed.checked;
+    const wantNotify = f.elements.browserNotify.checked;
+    if (wantNotify && 'Notification' in window && Notification.permission !== 'granted'){
+      try { const p = await Notification.requestPermission(); s.browserNotify = p === 'granted'; if (p !== 'granted') toast('Notifications are blocked in this browser’s settings'); } catch(err){ s.browserNotify = false; }
+    } else s.browserNotify = wantNotify;
+    applyTheme(); commit(); toast('Settings saved');
+  }
+});
+document.getElementById('restore-file').addEventListener('change', e => {
+  const file = e.target.files[0]; e.target.value = '';
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    let obj; try { obj = JSON.parse(r.result); } catch(err){ toast('That file isn’t a backup from this app'); return; }
+    if (!obj || !Array.isArray(obj.members) || !Array.isArray(obj.medicines)){ toast('That file isn’t a backup from this app'); return; }
+    confirmBox('Restore this backup?', `It has ${people(obj.members.length)} and ${plural(obj.medicines.length,'medicine')}. Everything currently in the app will be replaced.`, 'Restore backup', true).then(ok => {
+      if (!ok) return;
+      S = normalise(obj); unlocked = !(S.profile && S.profile.auth);
+      closeModal(); applyTheme(); document.getElementById('root').innerHTML = ''; commit(); toast('Backup restored');
+    });
+  };
+  r.readAsText(file);
+});
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); const m = document.getElementById('main'); if (m) m.focus({preventScroll:true}); });
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ hiddenAt = Date.now(); return; }
+  if (S.profile && S.profile.auth && unlocked && hiddenAt && Date.now() - hiddenAt > 15*60*1000){ unlocked = false; closeModal(); render(); return; }
+  tick();
+});
+function tick(){
+  if (!S.profile || (S.profile.auth && !unlocked)) return;
+  housekeeping(); processDue(); const created = evaluateAlerts(); save(); created.forEach(notify);
+  if (!dlg.open) render();
+}
+
+/* ---------- Start ---------- */
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; if (S.profile && unlocked) render(); });
+window.addEventListener('appinstalled', () => { deferredInstall = null; toast('App installed'); if (S.profile && unlocked) render(); });
+if ('serviceWorker' in navigator && canInstallHere()) navigator.serviceWorker.register('sw.js').catch(() => {});
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+load(); applyTheme();
+unlocked = !(S.profile && S.profile.auth);
+if (S.profile && unlocked){ housekeeping(); processDue(); evaluateAlerts(); save(); }
+render();
+setInterval(tick, 60000);
+})();
+</script>
+</body>
+</html>
